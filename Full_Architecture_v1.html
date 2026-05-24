@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Full System Architecture — Emotion-Aware Journal System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080c14;--s0:#0c1220;--s1:#111827;--s2:#1a2235;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --blue:#4f8ef7;--teal:#2dd4bf;--violet:#a78bfa;--yellow:#fbbf24;
+  --green:#34d399;--rose:#fb7185;--cyan:#22d3ee;--orange:#fb923c;
+  --text:#f1f5f9;--dim:#94a3b8;--muted:#475569;
+  --r:10px;--r-sm:6px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;padding:36px 28px 80px;min-width:920px;
+  background-image:radial-gradient(ellipse 60% 30% at 50% 0%,rgba(79,142,247,.1) 0%,transparent 60%),radial-gradient(ellipse 35% 25% at 5% 70%,rgba(45,212,191,.06) 0%,transparent 55%),radial-gradient(ellipse 35% 25% at 95% 70%,rgba(167,139,250,.06) 0%,transparent 55%);}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:40px;}
+.hdr-eye{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;}
+.hdr h1{font-size:clamp(18px,2.5vw,28px);font-weight:800;line-height:1.2;background:linear-gradient(135deg,#f1f5f9 30%,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.hdr-sub{font-size:12px;color:var(--dim);letter-spacing:.03em;}
+.pills{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:14px;}
+.pill{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;padding:3px 11px;border-radius:20px;letter-spacing:.05em;}
+.pb{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);color:#93c5fd;}
+.pt{background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.25);color:#5eead4;}
+.pv{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:#c4b5fd;}
+.py{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:#fde68a;}
+.pg{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#6ee7b7;}
+.po{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.25);color:#fdba74;}
+.pc{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);color:#67e8f9;}
+
+/* SECTION WRAPPER */
+.sec{max-width:1160px;margin:0 auto 6px;}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:3px 16px;border-radius:20px;display:inline-block;margin:0 auto 12px;}
+.sec-center{text-align:center;}
+
+/* CONNECTOR */
+.conn{display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;max-width:1160px;margin:0 auto;}
+.conn-line{width:1.5px;height:20px;background:linear-gradient(to bottom,rgba(167,139,250,.5),rgba(167,139,250,.1));}
+.conn-arrow{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid rgba(167,139,250,.4);}
+.conn-lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:.05em;text-align:center;margin-top:3px;}
+
+/* CARD */
+.card{border-radius:var(--r);background:var(--s1);border:1px solid var(--border);padding:13px 15px;position:relative;overflow:hidden;}
+.card:hover{border-color:var(--border2);}
+.stripe{position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0;}
+.s-blue{background:linear-gradient(90deg,var(--blue),rgba(79,142,247,.2));}
+.s-teal{background:linear-gradient(90deg,var(--teal),rgba(45,212,191,.2));}
+.s-violet{background:linear-gradient(90deg,var(--violet),rgba(167,139,250,.2));}
+.s-yellow{background:linear-gradient(90deg,var(--yellow),rgba(251,191,36,.2));}
+.s-green{background:linear-gradient(90deg,var(--green),rgba(52,211,153,.2));}
+.s-orange{background:linear-gradient(90deg,var(--orange),rgba(251,146,60,.2));}
+.s-cyan{background:linear-gradient(90deg,var(--cyan),rgba(34,211,238,.2));}
+.s-rose{background:linear-gradient(90deg,var(--rose),rgba(251,113,133,.2));}
+.card-head{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.card-ico{font-size:16px;line-height:1;}
+.card-title{font-size:12px;font-weight:700;color:var(--text);}
+.card-body{font-size:10px;color:var(--dim);line-height:1.6;}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.ctag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:4px;border:1px solid;}
+.ct-b{background:rgba(79,142,247,.08);border-color:rgba(79,142,247,.25);color:#93c5fd;}
+.ct-t{background:rgba(45,212,191,.08);border-color:rgba(45,212,191,.25);color:#5eead4;}
+.ct-v{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.25);color:#c4b5fd;}
+.ct-y{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.25);color:#fde68a;}
+.ct-g{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.25);color:#6ee7b7;}
+.ct-o{background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25);color:#fdba74;}
+.ct-c{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.25);color:#67e8f9;}
+.ct-r{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.25);color:#fda4af;}
+
+.fallback{display:flex;gap:7px;align-items:flex-start;margin-top:8px;padding:7px 9px;border-radius:var(--r-sm);background:rgba(251,113,133,.05);border:1px dashed rgba(251,113,133,.25);}
+.fb-ico{font-size:10px;flex-shrink:0;margin-top:1px;}
+.fb-txt{font-family:'JetBrains Mono',monospace;font-size:9px;color:#fda4af;line-height:1.5;}
+
+/* DATASET BANNER */
+.ds-banner{border:1px solid rgba(251,191,36,.3);border-left:3px solid var(--yellow);border-radius:var(--r);background:linear-gradient(135deg,rgba(251,191,36,.07),rgba(251,191,36,.02));padding:18px 22px;position:relative;}
+.ds-banner::before{content:'★  NOVEL CONTRIBUTION 1';position:absolute;top:10px;right:16px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--yellow);letter-spacing:.1em;opacity:.6;}
+.ds-title{font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:12px;}
+.ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.ds-col-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.step{display:flex;align-items:flex-start;gap:9px;margin-bottom:7px;}
+.step-n{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;width:19px;height:19px;border-radius:50%;flex-shrink:0;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);color:var(--yellow);display:flex;align-items:center;justify-content:center;}
+.step-t{font-size:10.5px;color:var(--dim);line-height:1.55;}
+.step-t strong{color:var(--text);font-weight:600;}
+.ds-badge{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 9px;border-radius:4px;display:inline-block;margin-top:5px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--green);}
+
+/* SHARED MODEL */
+.shared-model{border:1.5px solid rgba(167,139,250,.4);border-radius:var(--r);background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(79,142,247,.05));padding:18px 24px;display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;position:relative;}
+.shared-model::before{content:'SHARED BY BOTH PIPELINES';position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;padding:2px 13px;border-radius:20px;letter-spacing:.1em;background:var(--bg);border:1.5px solid rgba(167,139,250,.4);color:var(--violet);white-space:nowrap;}
+.sm-ico{font-size:28px;}
+.sm-title{font-size:14px;font-weight:700;color:var(--violet);margin-bottom:4px;}
+.sm-desc{font-size:10px;color:var(--dim);line-height:1.55;max-width:480px;}
+.sm-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.sm-tag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:4px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:var(--violet);}
+.sm-stats{display:grid;grid-template-rows:repeat(3,1fr);gap:6px;border-left:1px solid rgba(167,139,250,.2);padding-left:22px;}
+.sm-sv{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:var(--violet);line-height:1;}
+.sm-sl{font-size:9px;color:var(--muted);margin-top:1px;}
+
+/* PIPE SPLIT */
+.split-row{max-width:1160px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;padding:0 80px;position:relative;}
+.split-row::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:calc(100% - 160px);height:1.5px;background:linear-gradient(to right,rgba(79,142,247,.5) 0%,rgba(79,142,247,.5) 50%,rgba(45,212,191,.5) 50%,rgba(45,212,191,.5) 100%);}
+.split-arm{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.sp-lv-b{width:1.5px;height:20px;background:linear-gradient(to bottom,rgba(79,142,247,.5),rgba(79,142,247,.2));}
+.sp-lv-t{width:1.5px;height:20px;background:linear-gradient(to bottom,rgba(45,212,191,.5),rgba(45,212,191,.2));}
+.sp-ab{border-top:7px solid rgba(79,142,247,.5);border-left:5px solid transparent;border-right:5px solid transparent;}
+.sp-at{border-top:7px solid rgba(45,212,191,.5);border-left:5px solid transparent;border-right:5px solid transparent;}
+.sp-lb{font-family:'JetBrains Mono',monospace;font-size:8px;color:#93c5fd;white-space:nowrap;}
+.sp-lt{font-family:'JetBrains Mono',monospace;font-size:8px;color:#5eead4;white-space:nowrap;}
+
+/* PIPES */
+.pipes{display:grid;grid-template-columns:1fr 50px 1fr;max-width:1160px;margin:0 auto;align-items:start;}
+.pipe-hdr{display:flex;align-items:center;gap:9px;padding:10px 0 14px;border-bottom:1px solid var(--border2);margin-bottom:14px;}
+.ph-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-b{background:var(--blue);box-shadow:0 0 7px rgba(79,142,247,.6);}
+.dot-t{background:var(--teal);box-shadow:0 0 7px rgba(45,212,191,.6);}
+.ph-title{font-size:13px;font-weight:700;}
+.ph-b{color:var(--blue);}
+.ph-t{color:var(--teal);}
+.ph-sub{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:1px;}
+.div-col{display:flex;justify-content:center;padding-top:55px;}
+.v-line{width:1px;background:linear-gradient(to bottom,transparent 0%,var(--border2) 10%,var(--border2) 90%,transparent 100%);min-height:580px;}
+.arr-b{display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;}
+.arr-lb{width:1.5px;height:14px;background:linear-gradient(to bottom,rgba(79,142,247,.4),rgba(79,142,247,.1));}
+.arr-lt{width:1.5px;height:14px;background:linear-gradient(to bottom,rgba(45,212,191,.4),rgba(45,212,191,.1));}
+.arr-ab{border-top:6px solid rgba(79,142,247,.4);border-left:4px solid transparent;border-right:4px solid transparent;}
+.arr-at{border-top:6px solid rgba(45,212,241,.4);border-left:4px solid transparent;border-right:4px solid transparent;}
+.alb{font-family:'JetBrains Mono',monospace;font-size:8px;color:#93c5fd;text-align:center;white-space:nowrap;margin-top:1px;}
+.alt{font-family:'JetBrains Mono',monospace;font-size:8px;color:#5eead4;text-align:center;white-space:nowrap;margin-top:1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.feat-list{margin-top:7px;display:flex;flex-direction:column;gap:3px;}
+.feat-row{display:flex;gap:7px;align-items:baseline;}
+.feat-nm{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--teal);flex-shrink:0;min-width:110px;}
+.feat-d{font-size:9.5px;color:var(--muted);line-height:1.4;}
+
+/* OUTPUT CARDS */
+.out-grid{display:grid;grid-template-columns:1fr 70px 1fr;max-width:1160px;margin:0 auto;align-items:center;}
+.out-card{border-radius:var(--r);border:1px solid rgba(52,211,153,.25);background:linear-gradient(135deg,rgba(52,211,153,.07),rgba(6,182,212,.03));padding:14px 16px;}
+.out-title{font-size:12px;font-weight:700;color:var(--green);margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+.out-desc{font-size:10px;color:var(--dim);line-height:1.55;margin-bottom:8px;}
+.out-fields{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;}
+.of{display:flex;gap:5px;align-items:baseline;}
+.ofk{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--green);flex-shrink:0;}
+.ofv{font-size:9px;color:var(--muted);}
+.out-mid{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 8px;}
+.om-ico{font-size:16px;color:var(--muted);}
+.om-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-align:center;line-height:1.5;}
+
+/* AGENT LAYER */
+.agent-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;max-width:1160px;margin:0 auto;}
+.agent-card{border-radius:var(--r);background:var(--s1);border:1px solid var(--border);padding:13px 14px;position:relative;}
+.ag-num{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--violet);margin-bottom:5px;}
+.ag-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.ag-body{font-size:10px;color:var(--dim);line-height:1.55;}
+.ag-tag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:4px;display:inline-block;margin-top:6px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:var(--violet);}
+
+/* 4-SCENARIO SECTION */
+.scenario-wrap{border:1px solid rgba(251,146,60,.3);border-left:3px solid var(--orange);border-radius:var(--r);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.02));padding:18px 22px;}
+.sc-title{font-size:13px;font-weight:700;color:var(--orange);margin-bottom:14px;}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.sc-card{border-radius:var(--r);padding:13px 15px;border:1px solid;}
+.sc1{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.25);}
+.sc2{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.25);}
+.sc3{background:rgba(79,142,247,.06);border-color:rgba(79,142,247,.25);}
+.sc4{background:rgba(251,113,133,.06);border-color:rgba(251,113,133,.25);}
+.sc-hdr{font-size:11px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.sc1 .sc-hdr{color:var(--green);}
+.sc2 .sc-hdr{color:var(--yellow);}
+.sc3 .sc-hdr{color:var(--blue);}
+.sc4 .sc-hdr{color:var(--rose);}
+.sc-item{font-size:10px;color:var(--dim);line-height:1.65;display:flex;gap:6px;margin-bottom:3px;}
+.sc-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.d-g{background:var(--green);}
+.d-y{background:var(--yellow);}
+.d-b{background:var(--blue);}
+.d-r{background:var(--rose);}
+
+/* TRIGGER DETECTION */
+.trigger-box{border:1px solid rgba(34,211,238,.3);border-left:3px solid var(--cyan);border-radius:var(--r);background:rgba(34,211,238,.05);padding:14px 18px;margin-top:10px;}
+.tr-title{font-size:11px;font-weight:700;color:var(--cyan);margin-bottom:7px;}
+.tr-body{font-size:10px;color:var(--dim);line-height:1.6;}
+.tr-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;}
+.tr-step{background:var(--s2);border-radius:var(--r-sm);padding:10px 12px;border:1px solid var(--border);}
+.tr-sn{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--cyan);margin-bottom:4px;}
+.tr-st{font-size:10px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.tr-sd{font-size:9.5px;color:var(--dim);line-height:1.5;}
+
+/* LLM BOX */
+.llm-box{border:1px solid rgba(79,142,247,.3);border-left:3px solid var(--blue);border-radius:var(--r);background:rgba(79,142,247,.06);padding:14px 18px;margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.llm-title{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:5px;}
+.llm-body{font-size:10px;color:var(--dim);line-height:1.6;}
+.llm-prompt{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(0,0,0,.3);border-radius:5px;padding:9px 11px;color:#93c5fd;line-height:1.7;border:1px solid rgba(79,142,247,.15);}
+
+/* FEEDBACK LOOP */
+.fb-section{border:1px solid rgba(167,139,250,.3);border-left:3px solid var(--violet);border-radius:var(--r);background:rgba(167,139,250,.05);padding:14px 18px;margin-top:10px;}
+.fb-title{font-size:11px;font-weight:700;color:var(--violet);margin-bottom:10px;}
+.fb-loop{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+.fb-step{border-radius:var(--r-sm);padding:11px 12px;background:var(--s2);border:1px solid var(--border);position:relative;}
+.fb-n{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--violet);margin-bottom:4px;}
+.fb-t{font-size:10px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.fb-d{font-size:9.5px;color:var(--dim);line-height:1.5;}
+.fb-tag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:4px;display:inline-block;margin-top:5px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:var(--violet);}
+.fb-arr{position:absolute;right:-12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--violet);z-index:2;}
+
+/* NOVEL BADGES */
+.novel-row{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;}
+.nbadge{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 11px;border-radius:20px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--green);}
+
+/* OUTPUT FINAL */
+.final-out{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:1160px;margin:0 auto;}
+.fo-card{border-radius:var(--r);border:1px solid var(--border);background:var(--s1);padding:13px 15px;}
+.fo-title{font-size:11px;font-weight:700;margin-bottom:5px;}
+.fo-body{font-size:10px;color:var(--dim);line-height:1.55;}
+
+/* DOWNSTREAM */
+.downstream{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 0;}
+.ds-line{width:1.5px;height:22px;background:linear-gradient(to bottom,rgba(52,211,153,.4),rgba(52,211,153,.1));}
+.ds-arrow{border-top:7px solid rgba(52,211,153,.4);border-left:5px solid transparent;border-right:5px solid transparent;}
+.ds-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.05em;text-align:center;margin-top:2px;}
+
+/* LEGEND */
+.legend{max-width:1160px;margin:26px auto 0;display:flex;flex-wrap:wrap;gap:5px 18px;justify-content:center;}
+.li{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-eye">22AIE315 — Natural Language Processing · Member: R Teja · Amrita Vishwa Vidyapeetham</div>
+  <h1>Full System Architecture</h1>
+  <div class="hdr-sub">NLP-Based Emotion-Aware Journal Analysis & Adaptive Workload Management System</div>
+  <div class="pills">
+    <span class="pill pb">📝 Text Pipeline</span>
+    <span class="pill pt">🎙 Speech Pipeline</span>
+    <span class="pill pv">🤖 XLM-RoBERTa</span>
+    <span class="pill py">★ Indic-Aug-Emotion</span>
+    <span class="pill po">🎯 4-Scenario Recommender</span>
+    <span class="pill pc">🔁 Adaptive Feedback</span>
+    <span class="pill pg">తె · हि · മ · EN</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PHASE 1 — DATASET + FINE-TUNING
+══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-center"><span class="sec-label py">Phase 1 — Dataset Construction & Model Fine-Tuning</span></div>
+  <div class="ds-banner">
+    <div class="ds-title">🗂 Indic-Aug-Emotion — Novel Multilingual Emotion Dataset</div>
+    <div class="ds-grid">
+      <div>
+        <div class="ds-col-lbl">Dataset Construction</div>
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Source:</strong> SemEval-2018 Task 1 + GoEmotions → ~15,000 English entries · 11 emotion classes</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Translate:</strong> AI4Bharat IndicTrans2 (1B params) → Telugu, Hindi, Malayalam → ~45,000 entries</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Filter:</strong> Back-translation BLEU ≥ 0.60 → discard semantically divergent entries</div></div>
+        <div class="step"><div class="step-n">4</div><div class="step-t"><strong>Result:</strong> ~36,000 entries · 4 languages · 80/10/10 stratified split</div></div>
+        <span class="ds-badge">★ First Indic journal-style emotion dataset — public release planned</span>
+      </div>
+      <div>
+        <div class="ds-col-lbl">XLM-RoBERTa Fine-Tuning</div>
+        <div class="step"><div class="step-n">A</div><div class="step-t"><strong>Base:</strong> xlm-roberta-base · 125M params · 250K SentencePiece vocab covering all 4 scripts</div></div>
+        <div class="step"><div class="step-n">B</div><div class="step-t"><strong>Head:</strong> Linear 768→11 + Sigmoid · multi-label · BCE loss · threshold 0.40</div></div>
+        <div class="step"><div class="step-n">C</div><div class="step-t"><strong>Train:</strong> AdamW · lr=2e-5 · 5 epochs · batch=32 · Micro-F1 primary metric</div></div>
+        <div class="step"><div class="step-n">D</div><div class="step-t"><strong>Output:</strong> 11-dim emotion probability vector · shared by BOTH pipelines at inference</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-arrow"></div><div class="conn-lbl">fine-tuned model deployed to both pipelines</div></div>
+
+<!-- ══════════════════════════════════════════
+     PHASE 2 — SHARED MODEL
+══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="shared-model">
+    <div class="sm-ico">🤖</div>
+    <div>
+      <div class="sm-title">Fine-Tuned XLM-RoBERTa — Multilingual Emotion Classifier</div>
+      <div class="sm-desc">Processes Telugu, Hindi, Malayalam, English natively. No translation at inference. Single checkpoint shared by text pipeline and speech transcript pipeline.</div>
+      <div class="sm-tags">
+        <span class="sm-tag">Multi-label Sigmoid</span><span class="sm-tag">11 emotion classes</span>
+        <span class="sm-tag">BCE loss · threshold 0.40</span><span class="sm-tag">Max 256 tokens</span>
+        <span class="sm-tag">Output → 11-dim probability vector</span>
+      </div>
+    </div>
+    <div class="sm-stats">
+      <div><div class="sm-sv">11</div><div class="sm-sl">emotion classes</div></div>
+      <div><div class="sm-sv">4</div><div class="sm-sl">languages</div></div>
+      <div><div class="sm-sv">36K</div><div class="sm-sl">training samples</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SPLIT -->
+<div class="split-row" style="margin-top:4px;">
+  <div class="split-arm"><div class="sp-lv-b"></div><div class="sp-ab"></div><div class="sp-lb">text tokens</div></div>
+  <div class="split-arm"><div class="sp-lv-t"></div><div class="sp-at"></div><div class="sp-lt">transcript + audio</div></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PHASE 3 — DUAL PIPELINES
+══════════════════════════════════════════ -->
+<div class="pipes">
+
+  <!-- TEXT PIPE -->
+  <div style="padding-right:14px;">
+    <div class="pipe-hdr">
+      <div class="ph-dot dot-b"></div>
+      <div><div class="ph-title ph-b">Text Pipeline</div><div class="ph-sub">typed entry → emotion vector</div></div>
+    </div>
+
+    <div class="card"><div class="stripe s-blue"></div>
+      <div class="card-head"><span class="card-ico">📝</span><span class="card-title">Text Journal Entry</span></div>
+      <div class="card-body">User types journal in Telugu, Hindi, Malayalam, or English. POST /journal/text.</div>
+      <div class="card-tags"><span class="ctag ct-b">raw text</span><span class="ctag ct-b">any Indic script</span></div>
+    </div>
+    <div class="arr-b"><div class="arr-lb"></div><div class="arr-ab"></div><div class="alb">raw text</div></div>
+
+    <div class="card"><div class="stripe s-blue"></div>
+      <div class="card-head"><span class="card-ico">🌐</span><span class="card-title">Language Detection — fastText lid.176</span></div>
+      <div class="card-body">Identifies script and language in &lt;10ms. Returns ISO code + confidence. Routes to correct tokeniser.</div>
+      <div class="fallback"><span class="fb-ico">⚠</span><span class="fb-txt">Confidence &lt;0.70 → default English · low_confidence_lang flag</span></div>
+      <div class="card-tags"><span class="ctag ct-b">fastText lid.176</span><span class="ctag ct-b">&lt;10ms</span></div>
+    </div>
+    <div class="arr-b"><div class="arr-lb"></div><div class="arr-ab"></div><div class="alb">lang code + text</div></div>
+
+    <div class="card"><div class="stripe s-blue"></div>
+      <div class="card-head"><span class="card-ico">🧹</span><span class="card-title">Multilingual Preprocessing</span></div>
+      <div class="card-body">IndicNLP + spaCy xx_sent_ud_sm. Unicode NFC normalisation · sentence segmentation · tokenisation · noise removal. No stopword removal — XLM-RoBERTa needs full context.</div>
+      <div class="card-tags"><span class="ctag ct-b">IndicNLP</span><span class="ctag ct-b">spaCy xx_sent_ud_sm</span></div>
+    </div>
+    <div class="arr-b"><div class="arr-lb"></div><div class="arr-ab"></div><div class="alb">clean tokens → XLM-RoBERTa</div></div>
+
+    <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="stripe s-violet"></div>
+      <div class="card-head"><span class="card-ico">🤖</span><span class="card-title">XLM-RoBERTa Classification</span></div>
+      <div class="card-body">SentencePiece tokenise → [CLS] → linear head → Sigmoid → 11-dim vector.</div>
+      <div class="fallback"><span class="fb-ico">⚠</span><span class="fb-txt">max(scores) &lt;0.40 → low_confidence_emotion flag</span></div>
+      <div class="card-tags"><span class="ctag ct-v">11-dim vector</span><span class="ctag ct-v">dominant_emotion</span></div>
+    </div>
+  </div>
+
+  <div class="div-col"><div class="v-line"></div></div>
+
+  <!-- SPEECH PIPE -->
+  <div style="padding-left:14px;">
+    <div class="pipe-hdr">
+      <div class="ph-dot dot-t"></div>
+      <div><div class="ph-title ph-t">Speech Pipeline</div><div class="ph-sub">voice entry → emotion vector</div></div>
+    </div>
+
+    <div class="card"><div class="stripe s-teal"></div>
+      <div class="card-head"><span class="card-ico">🎙</span><span class="card-title">Voice Journal Entry</span></div>
+      <div class="card-body">User records in native language. WAV/MP3, 16kHz+. POST /journal/voice.</div>
+      <div class="card-tags"><span class="ctag ct-t">WAV/MP3</span><span class="ctag ct-t">16kHz+</span></div>
+    </div>
+    <div class="arr-b"><div class="arr-lt"></div><div class="arr-at"></div><div class="alt">audio → two parallel processes</div></div>
+
+    <div class="row2">
+      <div class="card"><div class="stripe s-teal"></div>
+        <div class="card-head"><span class="card-ico">📝</span><span class="card-title">Whisper STT</span></div>
+        <div class="card-body">whisper-large-v3. Auto-detects language. Returns transcript + ISO code.</div>
+        <div class="fallback"><span class="fb-ico">⚠</span><span class="fb-txt">&lt;3 words → stt_failure_flag</span></div>
+        <div class="card-tags"><span class="ctag ct-t">whisper-large-v3</span></div>
+      </div>
+      <div class="card"><div class="stripe s-teal"></div>
+        <div class="card-head"><span class="card-ico">📈</span><span class="card-title">Acoustic Extraction</span></div>
+        <div class="card-body">Librosa 0.10 on raw audio:</div>
+        <div class="feat-list">
+          <div class="feat-row"><span class="feat-nm">MFCC (×40)</span><span class="feat-d">vocal tract shape</span></div>
+          <div class="feat-row"><span class="feat-nm">Pitch F0</span><span class="feat-d">excitement↔sadness</span></div>
+          <div class="feat-row"><span class="feat-nm">Speech rate</span><span class="feat-d">anxiety↔fatigue</span></div>
+          <div class="feat-row"><span class="feat-nm">Shimmer/Jitter</span><span class="feat-d">stress·tension</span></div>
+          <div class="feat-row"><span class="feat-nm">ZCR</span><span class="feat-d">energy arousal</span></div>
+        </div>
+        <div class="card-tags"><span class="ctag ct-t">Librosa 0.10</span></div>
+      </div>
+    </div>
+    <div class="arr-b"><div class="arr-lt"></div><div class="arr-at"></div><div class="alt">transcript → XLM-RoBERTa · features → 1D-CNN</div></div>
+
+    <div class="row2">
+      <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="stripe s-violet"></div>
+        <div class="card-head"><span class="card-ico">🤖</span><span class="card-title">XLM-RoBERTa (Transcript)</span></div>
+        <div class="card-body">Same fine-tuned model. Transcript → 11-dim linguistic emotion vector.</div>
+        <div class="card-tags"><span class="ctag ct-v">11-dim linguistic</span></div>
+      </div>
+      <div class="card"><div class="stripe s-teal"></div>
+        <div class="card-head"><span class="card-ico">🎼</span><span class="card-title">1D-CNN Acoustic</span></div>
+        <div class="card-body">Trained on RAVDESS+IEMOCAP. Outputs valence+arousal (−1 to +1) on Russell Circumplex.</div>
+        <div class="fallback"><span class="fb-ico">⚠</span><span class="fb-txt">Conf &lt;0.50 → acoustic_excluded_flag</span></div>
+        <div class="card-tags"><span class="ctag ct-t">valence·arousal</span><span class="ctag ct-y">RAVDESS+IEMOCAP</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EMOTION VECTOR OUTPUTS
+══════════════════════════════════════════ -->
+<div class="conn" style="margin-top:4px;"><div class="conn-line"></div><div class="conn-arrow"></div><div class="conn-lbl">emotion vectors stored separately · modality = "text" | "speech"</div></div>
+<div class="sec-center" style="margin-bottom:10px;"><span class="sec-label pg">MongoDB — emotion_vectors collection</span></div>
+<div class="out-grid">
+  <div class="out-card">
+    <div class="out-title">📊 Text Emotion Vector <span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted)">modality:"text"</span></div>
+    <div class="out-desc">Output of XLM-RoBERTa on preprocessed typed journal text.</div>
+    <div class="out-fields">
+      <div class="of"><span class="ofk">emotion_scores</span><span class="ofv">11-dim float array</span></div>
+      <div class="of"><span class="ofk">dominant_emotion</span><span class="ofv">highest class</span></div>
+      <div class="of"><span class="ofk">active_emotions</span><span class="ofv">scores &gt;0.40</span></div>
+      <div class="of"><span class="ofk">confidence</span><span class="ofv">max score</span></div>
+      <div class="of"><span class="ofk">detected_language</span><span class="ofv">te/hi/ml/en</span></div>
+      <div class="of"><span class="ofk">timestamp</span><span class="ofv">BiLSTM ordering</span></div>
+    </div>
+  </div>
+  <div class="out-mid">
+    <div class="om-ico">⇄</div>
+    <div class="om-lbl">separate<br/>·<br/>divergence<br/>score if<br/>same day</div>
+  </div>
+  <div class="out-card">
+    <div class="out-title">📊 Speech Emotion Vector <span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted)">modality:"speech"</span></div>
+    <div class="out-desc">XLM-RoBERTa on transcript + 1D-CNN acoustic combined.</div>
+    <div class="out-fields">
+      <div class="of"><span class="ofk">emotion_scores</span><span class="ofv">11-dim linguistic</span></div>
+      <div class="of"><span class="ofk">dominant_emotion</span><span class="ofv">highest class</span></div>
+      <div class="of"><span class="ofk">valence</span><span class="ofv">acoustic −1 to +1</span></div>
+      <div class="of"><span class="ofk">arousal</span><span class="ofv">acoustic −1 to +1</span></div>
+      <div class="of"><span class="ofk">acoustic_excluded</span><span class="ofv">bool</span></div>
+      <div class="of"><span class="ofk">stt_failure</span><span class="ofv">bool</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-arrow"></div><div class="conn-lbl">→ Central Emotional State Store (MongoDB agent_state)</div></div>
+
+<!-- ══════════════════════════════════════════
+     PHASE 4 — AGENT LAYER
+══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-center"><span class="sec-label pv">Phase 4 — Agent Layer</span></div>
+  <div class="agent-grid">
+    <div class="agent-card"><div class="stripe s-violet"></div>
+      <div class="ag-num">Agent 1</div>
+      <div class="ag-title">Trend Monitoring</div>
+      <div class="ag-body">BiLSTM + z-score anomaly detection. Computes EMS (Emotional Momentum Score 0–100) from intensity × recurrence × acceleration. Maintains 7-day and 14-day rolling averages.</div>
+      <span class="ag-tag">★ Novel — EMS metric</span>
+    </div>
+    <div class="agent-card"><div class="stripe s-rose"></div>
+      <div class="ag-num">Agent 2</div>
+      <div class="ag-title">Burnout Risk</div>
+      <div class="ag-body">Computes burnout_risk_score 0–100 from EMS (×0.5) + z-score (×0.3) + positive emotion variance (×0.2). Score ≥ 70 triggers alert flag.</div>
+      <span class="ag-tag">alert at ≥70</span>
+    </div>
+    <div class="agent-card"><div class="stripe s-orange"></div>
+      <div class="ag-num">Agent 3</div>
+      <div class="ag-title">Recommendation</div>
+      <div class="ag-body">4-scenario time-aware recommender. Plutchik ontology → interest_profile filter → Local LLM generation. Adaptive feedback loop −5 to +5.</div>
+      <span class="ag-tag">★ Novel — feedback loop</span>
+    </div>
+    <div class="agent-card"><div class="stripe s-cyan"></div>
+      <div class="ag-num">Agent 4</div>
+      <div class="ag-title">Workload Management</div>
+      <div class="ag-body">Time-aware energy labelling. Before 8 PM: apply today. After 8 PM: apply tomorrow + morning notification. 3-level: Deep Work / Light Tasks / Rest Day.</div>
+      <span class="ag-tag">★ Novel — time-aware</span>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-arrow"></div><div class="conn-lbl">dominant_emotion + EMS + burnout_risk_score + submission_time → Recommendation Agent</div></div>
+
+<!-- ══════════════════════════════════════════
+     PHASE 5 — 4-SCENARIO RECOMMENDER
+══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-center"><span class="sec-label po">Phase 5 — 4-Scenario Time-Aware Recommendation System</span></div>
+  <div class="scenario-wrap">
+    <div class="sc-title">🎯 Scenario Decision Matrix — Time × Mood</div>
+    <div class="sc-grid">
+
+      <div class="sc-card sc1">
+        <div class="sc-hdr">✅ Scenario 1 — Before 8 PM · Happy</div>
+        <div class="sc-item"><div class="sc-dot d-g"></div>dominant_emotion ∈ joy/trust/anticipation + EMS &lt;40</div>
+        <div class="sc-item"><div class="sc-dot d-g"></div>Suggest productive work + deep focus tasks today</div>
+        <div class="sc-item"><div class="sc-dot d-g"></div>Energy label: "Deep-work day" · apply immediately</div>
+        <div class="sc-item"><div class="sc-dot d-g"></div>Motivational activity from interest_profile (learning, goals)</div>
+      </div>
+
+      <div class="sc-card sc2">
+        <div class="sc-hdr">😟 Scenario 2 — Before 8 PM · Exhausted</div>
+        <div class="sc-item"><div class="sc-dot d-y"></div>dominant_emotion ∈ sadness/fear/anger/disgust OR EMS ≥40</div>
+        <div class="sc-item"><div class="sc-dot d-y"></div>Suggest recovery activity right now (music/hobby/yoga)</div>
+        <div class="sc-item"><div class="sc-dot d-y"></div>Energy label: "Rest now" · apply immediately</div>
+        <div class="sc-item"><div class="sc-dot d-y"></div>Trigger detection: warn about identified stressors from history</div>
+      </div>
+
+      <div class="sc-card sc3">
+        <div class="sc-hdr">🌙 Scenario 3 — After 8 PM · Happy</div>
+        <div class="sc-item"><div class="sc-dot d-b"></div>Acknowledge positive state · no action needed tonight</div>
+        <div class="sc-item"><div class="sc-dot d-b"></div>Plan tomorrow as productive day based on current schedule</div>
+        <div class="sc-item"><div class="sc-dot d-b"></div>Morning notification: "You're in a good place — tackle something meaningful today"</div>
+        <div class="sc-item"><div class="sc-dot d-b"></div>No recovery suggestion needed — just forward-plan</div>
+      </div>
+
+      <div class="sc-card sc4">
+        <div class="sc-hdr">🚨 Scenario 4 — After 8 PM · Exhausted</div>
+        <div class="sc-item"><div class="sc-dot d-r"></div>Suggest recovery activity right now (music/hobby/yoga)</div>
+        <div class="sc-item"><div class="sc-dot d-r"></div>Trigger detection: identify what caused exhaustion from today's journal + 7/30-day history</div>
+        <div class="sc-item"><div class="sc-dot d-r"></div>Tomorrow flagged as rest day · morning notification sent</div>
+        <div class="sc-item"><div class="sc-dot d-r"></div>"Avoid [trigger] tomorrow" shown with evidence from history</div>
+      </div>
+    </div>
+
+    <!-- TRIGGER DETECTION -->
+    <div class="trigger-box">
+      <div class="tr-title">🔍 Longitudinal Trigger Detection — Scenarios 2 & 4 (★ Novel Contribution 6)</div>
+      <div class="tr-body">When mood is exhausted, the system identifies what caused it by cross-referencing today's journal topics with historical emotion+topic patterns from the past 7 and 30 days. Recurring co-occurrences of a topic and high stress are flagged as triggers.</div>
+      <div class="tr-row">
+        <div class="tr-step">
+          <div class="tr-sn">Step 1</div>
+          <div class="tr-st">Extract today's topics</div>
+          <div class="tr-sd">TF-IDF + spaCy NER on current journal entry → topic tags (e.g. "deadlines", "sleep", "argument")</div>
+        </div>
+        <div class="tr-step">
+          <div class="tr-sn">Step 2</div>
+          <div class="tr-st">Cross-reference history</div>
+          <div class="tr-sd">Query last 7 days + 30 days of (topic_tag, emotion_score) pairs. Count co-occurrences of topic + high stress (EMS &gt;50)</div>
+        </div>
+        <div class="tr-step">
+          <div class="tr-sn">Step 3</div>
+          <div class="tr-st">Flag recurring triggers</div>
+          <div class="tr-sd">Topics appearing ≥3 times with high stress in past 7 days flagged as acute triggers. ≥5 times in 30 days flagged as chronic triggers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LLM BOX -->
+    <div class="llm-box">
+      <div>
+        <div class="llm-title">🤖 Local LLM — Natural Language Recommendation Generator</div>
+        <div class="llm-body">Llama 3.2 (3B) or Mistral 7B via Ollama. Runs locally — zero data egress, full privacy. Receives structured context and generates a personalised, natural-language suggestion in the user's language. In-context learning from feedback history steers outputs toward proven preferences.</div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 9px;border-radius:4px;display:inline-block;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);color:#93c5fd;">Llama 3.2 3B · Mistral 7B · Ollama · zero egress</div>
+      </div>
+      <div>
+        <div class="llm-title">Context window at inference</div>
+        <div class="llm-prompt">System: Wellness assistant. No diagnosis.<br/>
+Scenario: 4 (late night · exhausted)<br/>
+Emotion: sadness 0.78, fear 0.45<br/>
+EMS: 72 · trend: escalating<br/>
+Triggers: "deadlines" (acute), "sleep" (chronic)<br/>
+Interests: classical music, yoga, reading<br/>
+Feedback: yoga→+4, classical→+1, reading→-2<br/>
+Language: Telugu<br/>
+Tomorrow: flag as rest day<br/><br/>
+Generate one suggestion now + one avoid-tip.</div>
+      </div>
+    </div>
+
+    <!-- FEEDBACK LOOP -->
+    <div class="fb-section">
+      <div class="fb-title">🔁 Adaptive Feedback Loop — asked at next login · scale −5 to +5 (★ Novel Contribution 5)</div>
+      <div class="fb-loop">
+        <div class="fb-step">
+          <div class="fb-n">Step 1</div>
+          <div class="fb-t">Suggest</div>
+          <div class="fb-d">LLM generates suggestion using emotion + interest profile + ranked feedback history</div>
+          <div class="fb-tag">POST /recommend</div>
+          <div class="fb-arr">→</div>
+        </div>
+        <div class="fb-step">
+          <div class="fb-n">Step 2</div>
+          <div class="fb-t">Next login prompt</div>
+          <div class="fb-d">"Last time we suggested [X]. How much did it help?" Shown once on next app open — not 30 min later</div>
+          <div class="fb-tag">−5 to +5 slider</div>
+          <div class="fb-arr">→</div>
+        </div>
+        <div class="fb-step">
+          <div class="fb-n">Step 3</div>
+          <div class="fb-t">Store feedback</div>
+          <div class="fb-d">feedback_score stored against (user_id, dominant_emotion, suggestion_type, suggestion_item, scenario)</div>
+          <div class="fb-tag">MongoDB feedback_log</div>
+          <div class="fb-arr">→</div>
+        </div>
+        <div class="fb-step">
+          <div class="fb-n">Step 4</div>
+          <div class="fb-t">Update rankings</div>
+          <div class="fb-d">Cumulative preference_score per (emotion, item) updated. Items ≤ −10 suppressed. Fed into LLM context next session</div>
+          <div class="fb-tag">preference_scores</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="novel-row">
+      <span class="nbadge">★ NC1 — Indic-Aug-Emotion dataset</span>
+      <span class="nbadge">★ NC2 — EMS metric (BiLSTM+z-score)</span>
+      <span class="nbadge">★ NC3 — Plutchik ontology recommender</span>
+      <span class="nbadge">★ NC4 — Text vs voice divergence study</span>
+      <span class="nbadge">★ NC5 — Adaptive feedback loop (−5 to +5)</span>
+      <span class="nbadge">★ NC6 — Longitudinal trigger detection</span>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-arrow"></div><div class="conn-lbl">→ Output Layer</div></div>
+
+<!-- ══════════════════════════════════════════
+     PHASE 6 — OUTPUT LAYER
+══════════════════════════════════════════ -->
+<div class="sec">
+  <div class="sec-center"><span class="sec-label pg">Phase 6 — Output Layer</span></div>
+  <div class="final-out">
+    <div class="fo-card"><div class="stripe s-green"></div>
+      <div class="fo-title" style="color:var(--green)">📊 Weekly Summary Report</div>
+      <div class="fo-body">Dominant emotion of the week · EMS trend chart (Plotly) · burnout risk gauge · recurring topics (TF-IDF top-5) · text vs voice divergence score · personalised wellness suggestions. Rendered in user's language via Jinja2 + i18n.</div>
+    </div>
+    <div class="fo-card"><div class="stripe s-orange"></div>
+      <div class="fo-title" style="color:var(--orange)">🎯 Wellness Panel</div>
+      <div class="fo-body">Real-time recommendation from Local LLM. Refreshed after every journal entry. Music genre · activity · journaling prompt — all from user's interest_profile. Includes trigger avoidance tip when scenario 2 or 4.</div>
+    </div>
+    <div class="fo-card"><div class="stripe s-cyan"></div>
+      <div class="fo-title" style="color:var(--cyan)">⚡ Adaptive Workload Plan</div>
+      <div class="fo-body">Energy label: Deep Work / Light Tasks / Rest Day. Time-aware: before 8 PM = today, after 8 PM = tomorrow + morning notification. Task reprioritisation (light→heavy on good days, reverse on bad). Burnout risk score shown prominently when ≥70.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="li"><div class="ld" style="background:var(--blue)"></div>Text Pipeline</div>
+  <div class="li"><div class="ld" style="background:var(--teal)"></div>Speech Pipeline</div>
+  <div class="li"><div class="ld" style="background:var(--violet)"></div>XLM-RoBERTa (shared)</div>
+  <div class="li"><div class="ld" style="background:var(--yellow)"></div>Dataset / Fine-tuning</div>
+  <div class="li"><div class="ld" style="background:var(--green)"></div>Emotion Vector / Output</div>
+  <div class="li"><div class="ld" style="background:var(--orange)"></div>Recommendation Agent</div>
+  <div class="li"><div class="ld" style="background:var(--cyan)"></div>Workload Agent</div>
+  <div class="li"><div class="ld" style="background:var(--rose);border-radius:50%"></div>Fallback Conditions</div>
+</div>
+
+</body>
+</html>

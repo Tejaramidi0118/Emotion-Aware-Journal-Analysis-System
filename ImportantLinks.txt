@@ -1,0 +1,6 @@
+# Dataset
+https://huggingface.co/datasets/google-research-datasets/go_emotions
+
+# Translator
+https://huggingface.co/ai4bharat/indictrans2-en-indic-1B
+

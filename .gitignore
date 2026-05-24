@@ -1,0 +1,68 @@
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# ── Environment & Secrets ─────────────────────────────────
+.env
+.env.*
+*.env
+
+# ── Trained Models (too large for GitHub) ─────────────────
+models_trained/best_model.pth
+models_trained/best_speech_model.pth
+models_trained/last_checkpoint.pth
+models_trained/speech_checkpoint.pth
+models_trained/lid.176.bin
+model_output_v2/
+*.pth
+*.pt
+*.bin
+
+# ── Data files ────────────────────────────────────────────
+*.csv
+!data/song_catalogue.csv
+
+# ── Jupyter Notebooks checkpoints ────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Database ─────────────────────────────────────────────
+*.db
+*.sqlite
+
+# ── Audio temp files ──────────────────────────────────────
+/tmp/
+*.wav
+*.mp3
+*.webm
+
+# ── Node (frontend) ───────────────────────────────────────
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
