@@ -471,7 +471,7 @@ def run_agent_pipeline(
         count=3
     )
 
-    print(f"  Music Tracks Found: {len(music_result['tracks'])}")
+    print(f"  Music Tracks Found: {len(music_result)}")
     
     # Agent 4 — Generate Suggestion via Groq
     suggestion = generate_suggestion(
@@ -515,7 +515,7 @@ def run_agent_pipeline(
         # Recommendation
         "suggestion":       suggestion,
         "triggers":         triggers,
-        "music_tracks": music_result["tracks"],
+        "music_tracks": music_result,
 
         # Meta
         "dominant_emotion": dominant_emotion,
