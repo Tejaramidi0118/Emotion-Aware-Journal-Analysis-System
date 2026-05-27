@@ -3,6 +3,13 @@ from datetime import datetime, timedelta
 from app.database import emotion_vectors_col, agent_state_col, mongo_db
 from app.services.langchain_service import generate_suggestion
 from app.services.youtube_music_service import get_music_recommendations
+from app.rag.retriever import (
+    retrieve_wellness_context,
+    retrieve_user_memory,
+    retrieve_successful_interventions,
+    store_journal_embedding
+)
+from app.rag.context_builder import build_rag_context
 
 def sanitize_for_mongo(obj):
     import numpy as np
@@ -472,7 +479,32 @@ def run_agent_pipeline(
     )
 
     print(f"  Music Tracks Found: {len(music_result)}")
-    
+    try:
+        wellness_docs  = retrieve_wellness_context(dominant_emotion, ems, burnout_score)
+        user_memory    = retrieve_user_memory(user_id, dominant_emotion)
+        past_successes = retrieve_successful_interventions(user_id, dominant_emotion)
+        rag_context    = build_rag_context(
+            wellness_docs, user_memory, past_successes,
+            dominant_emotion, ems, burnout_score
+        )
+        print(f"  RAG: {len(wellness_docs)} wellness + {len(user_memory)} memories + {len(past_successes)} successes")
+    except Exception as e:
+        print(f"  RAG retrieval failed (non-critical): {e}")
+        rag_context = ""
+
+    # Store this journal in user memory for future retrieval
+    try:
+        store_journal_embedding(
+            user_id          = user_id,
+            entry_id         = entry_id,
+            text             = "",  # will be filled by router
+            dominant_emotion = dominant_emotion,
+            ems              = ems,
+            date             = submission_time.strftime("%Y-%m-%d")
+        )
+    except Exception as e:
+        print(f"  RAG store journal failed (non-critical): {e}")
+
     # Agent 4 — Generate Suggestion via Groq
     suggestion = generate_suggestion(
         dominant_emotion  = dominant_emotion,
@@ -483,10 +515,13 @@ def run_agent_pipeline(
         feedback_history  = feedback_history,
         language          = language,
         triggers          = triggers,
-        user_id=user_id,
-        ems       = ems,
-        ems_trend = ems_result["trend"]
+        user_id           = user_id,
+        ems               = ems,
+        ems_trend         = ems_result["trend"],
+        rag_context       = rag_context    # NEW
     )
+
+
     print(f"  Suggestion: {suggestion[:60]}...")
 
     # Build complete agent state

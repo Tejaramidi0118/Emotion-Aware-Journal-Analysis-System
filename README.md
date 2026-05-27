@@ -22,7 +22,19 @@ A privacy-preserving, multilingual AI-powered journal analysis system that reads
 | NC4 | **Text vs Voice Divergence Study** — Cosine distance between linguistic and acoustic emotion vectors |
 | NC5 | **Adaptive Feedback Loop** — In-context learning via -5 to +5 feedback without model retraining |
 | NC6 | **Longitudinal Trigger Detection** — Identifies recurring stress patterns across 7/30-day history |
+**RAG System (Novel Contribution 7)**
 
+Replaced generic suggestions with context-aware recommendations using:
+
+- **Vector DB**: Supabase pgvector (cloud-hosted, deployment-friendly)
+- **Embeddings**: sentence-transformers/all-MiniLM-L6-v2 (384-dim)
+- **3 Retrieval Sources**:
+  1. Wellness Knowledge Base — CBT, stress, burnout, mindfulness content
+  2. User Emotional Memory — past journal patterns and EMS trends  
+  3. Intervention History — successful suggestions (feedback ≥ 3)
+- **Reward Learning**: -5 to +5 feedback reinforces helpful suggestions,
+  suppresses ineffective ones in similar emotional states
+- **Privacy**: User memories are isolated per user_id — no cross-user retrieval
 ---
 
 ## System Architecture
@@ -235,12 +247,6 @@ The **Indic-Aug-Emotion Dataset** was constructed by:
 - **Journaling Streak** — Daily streak tracking with badges
 - **Analytics Dashboard** — 4 charts: EMS trend, emotion timeline, distribution, daily stress
 - **Profile Management** — Update interests, tone preference, work context
-
----
-
-## License
-
-This project is developed for academic purposes as part of the NLP course at Amrita Vishwa Vidyapeetham.
 
 ---
 

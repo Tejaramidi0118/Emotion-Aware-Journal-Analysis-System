@@ -81,7 +81,19 @@ def process_text_journal(req: TextJournalRequest, db: Session = Depends(get_db))
         "triggers":         agent["triggers"],
         "source":           result.get("source", "xlm-roberta"),
     }))
-
+    # After emotion_vectors_col.insert_one(...)
+    try:
+        from app.rag.retriever import store_journal_embedding
+        store_journal_embedding(
+            user_id          = req.user_id,
+            entry_id         = entry_id,
+            text             = req.text,
+            dominant_emotion = result["dominant_emotion"],
+            ems              = agent["ems"],
+            date             = timestamp.strftime("%Y-%m-%d")
+        )
+    except Exception as e:
+        print(f"RAG journal store failed (non-critical): {e}")
     return {
         # Emotion detection
         "user_id": req.user_id, 

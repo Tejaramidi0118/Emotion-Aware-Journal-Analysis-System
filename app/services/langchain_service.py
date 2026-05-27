@@ -113,26 +113,26 @@ def classify_with_groq(text: str) -> dict | None:
 # ══════════════════════════════════════════════════════════
 
 suggestion_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are a warm personal wellness companion writing a short suggestion.
+    ("system", """You are a warm personal wellness companion.
 
-STRICT RULES — violations are unacceptable:
-- NEVER say: "Hey there", "reaching out", "I'm glad", "I sense that you're feeling weighed down"
-- NEVER start with "I" as the first word
-- NEVER give generic advice — always use their specific interests
-- Speak like a trusted friend who knows them well
-- 2 sentences maximum
-- If current emotion is positive but stress trend is high — acknowledge both
-- {language}
-- {scenario_instruction}"""),
-    ("human", """Current emotion: {dominant_emotion}
-Stress trend (EMS): {ems}/100 — {ems_trend}
+NEVER say: "reaching out", "I'm glad you contacted", "Hey there I can tell"
+Speak like a trusted friend, not customer support.
+Be specific — use their actual interests.
+2-3 sentences maximum.
+{language}
+{scenario_instruction}"""),
+    ("human", """Emotion: {dominant_emotion} | Active: {active_emotions}
+Stress (EMS): {ems}/100 | Trend: {ems_trend}
 Interests — Music: {music} | Activities: {activities} | Hobbies: {hobbies}
-Tone preference: {tone}
+Tone: {tone}
 What helped before: {feedback_context}
 Recent pattern: {recent_context}
 Stressors: {trigger_context}
 
-Write 2 sentences maximum:""")
+Relevant context from wellness knowledge and user history:
+{rag_context}
+
+Write one personal suggestion using the above context:""")
 ])
 # ══════════════════════════════════════════════════════════
 # CHAIN 3 — Journal Prompt Generation
@@ -251,28 +251,21 @@ LANGUAGE_INSTRUCTIONS = {
 
 
 def generate_suggestion(
-    dominant_emotion: str,
-    active_emotions: list,
-    emotion_scores: dict,
-    interest_profile: dict,
-    scenario: int,
-    feedback_history: list = [],
-    language: str = "en",
-    triggers: list = [],
-    user_id: str = "",
+    dominant_emotion:  str,
+    active_emotions:   list,
+    emotion_scores:    dict,
+    interest_profile:  dict,
+    scenario:          int,
+    feedback_history:  list = [],
+    language:          str  = "en",
+    triggers:          list = [],
+    user_id:           str  = "",
     ems:               float = 0.0,
-    ems_trend:         str  = "stable"
+    ems_trend:         str  = "stable",
+    rag_context:       str  = ""    # NEW parameter
 ) -> str:
-    """
-    Generates personalized wellness suggestion using Groq.
-    Called by Recommendation Agent after emotion + scenario determined.
-    """
-
-    # Recent Context
     recent_context = get_recent_context(user_id) if user_id else "No history."
 
-
-    # Build feedback context string
     helpful     = [f["item"] for f in feedback_history if f.get("score", 0) >= 2]
     not_helpful = [f["item"] for f in feedback_history if f.get("score", 0) <= -2]
     feedback_context = ""
@@ -283,27 +276,25 @@ def generate_suggestion(
     if not feedback_context:
         feedback_context = "No feedback history yet."
 
-    # Build trigger context
-    trigger_context = ", ".join(triggers) if triggers else "None identified."
-
     try:
         result = suggestion_chain.invoke({
-            "language":            LANGUAGE_INSTRUCTIONS.get(language, LANGUAGE_INSTRUCTIONS["en"]),
+            "language":             LANGUAGE_INSTRUCTIONS.get(language, LANGUAGE_INSTRUCTIONS["en"]),
             "scenario_instruction": SCENARIO_INSTRUCTIONS.get(scenario, SCENARIO_INSTRUCTIONS[2]),
-            "dominant_emotion":    dominant_emotion,
-            "active_emotions":     ", ".join(active_emotions) if active_emotions else "none",
-            "music":               ", ".join(interest_profile.get("music", [])) or "not specified",
-            "activities":          ", ".join(interest_profile.get("activities", [])) or "not specified",
-            "hobbies":             ", ".join(interest_profile.get("hobbies", [])) or "not specified",
-            "feedback_context":    feedback_context,
-            "trigger_context":     trigger_context,
+            "dominant_emotion":     dominant_emotion,
+            "active_emotions":      ", ".join(active_emotions) if active_emotions else "none",
+            "music":                ", ".join(interest_profile.get("music", [])) or "not specified",
+            "activities":           ", ".join(interest_profile.get("activities", [])) or "not specified",
+            "hobbies":              ", ".join(interest_profile.get("hobbies", [])) or "not specified",
+            "feedback_context":     feedback_context,
             "recent_context":       recent_context,
-            "ems":       round(ems, 1),
-            "ems_trend": ems_trend,
-            "tone":      interest_profile.get("tone", "friendly"),
+            "trigger_context":      ", ".join(triggers) if triggers else "None.",
+            "ems":                  round(ems, 1),
+            "ems_trend":            ems_trend,
+            "tone":                 interest_profile.get("tone", "friendly"),
+            "rag_context":          rag_context,    # NEW
         })
         return result.strip()
-
+    
     except Exception as e:
         print(f"Groq suggestion generation failed: {e}")
         # Static fallback if Groq fails
