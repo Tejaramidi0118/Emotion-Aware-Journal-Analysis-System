@@ -4,7 +4,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     MONGO_URL: str
     MONGO_DB: str
-    SECRET_KEY: str
+    SECRET_KEY: str = ""
 
     GROQ_API_KEY: str
     ENVIRONMENT: str
@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    XLM_MODEL_PATH: str
-    CNN_MODEL_PATH: str
+    XLM_MODEL_PATH: str = ""
+    CNN_MODEL_PATH: str = ""
     XLM_BASE_MODEL: str = "xlm-roberta-base"
 
     class Config:
