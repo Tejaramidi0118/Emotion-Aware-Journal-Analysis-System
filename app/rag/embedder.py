@@ -1,93 +1,54 @@
-from sentence_transformers import (
-    SentenceTransformer
-)
 import hashlib
+import requests
+
+from app.config import settings
 
 
-# =====================================================
-# Global Singleton Model
-# =====================================================
+HF_URL = (
+    "https://router.huggingface.co/hf-inference/models/"
+    "sentence-transformers/all-MiniLM-L6-v2/"
+    "pipeline/feature-extraction"
+)
 
-_embedder = None
+HEADERS = {
+    "Authorization": f"Bearer {settings.HF_API_KEY}"
+}
 
-
-def get_embedder():
-    """
-    Load model once per process.
-    Reuse afterward.
-    """
-
-    global _embedder
-
-    if _embedder is None:
-
-        print(
-            "Loading sentence-transformers for RAG..."
-        )
-
-        _embedder = SentenceTransformer(
-            "sentence-transformers/all-MiniLM-L6-v2"
-        )
-
-        print(
-            "RAG embedder loaded."
-        )
-
-    return _embedder
-
-
-# =====================================================
-# Single Text Embedding
-# =====================================================
 
 def embed_text(text: str) -> list:
-    """
-    Embed one text.
-    Returns 384-dim vector.
-    """
 
-    model = get_embedder()
-
-    vector = model.encode(
-        str(text),
-        normalize_embeddings=True
+    response = requests.post(
+        HF_URL,
+        headers=HEADERS,
+        json={
+            "inputs": [text]
+        },
+        timeout=60
     )
 
-    return vector.tolist()
+    response.raise_for_status()
 
+    return response.json()[0]
 
-# =====================================================
-# Batch Embedding
-# =====================================================
 
 def embed_batch(texts: list) -> list:
-    """
-    Efficient batch embedding.
-    """
 
-    model = get_embedder()
-
-    vectors = model.encode(
-        texts,
-        normalize_embeddings=True,
-        batch_size=32
+    response = requests.post(
+        HF_URL,
+        headers=HEADERS,
+        json={
+            "inputs": texts
+        },
+        timeout=120
     )
 
-    return [
-        v.tolist()
-        for v in vectors
-    ]
+    response.raise_for_status()
 
+    return response.json()
 
-# =====================================================
-# Text Hashing
-# =====================================================
 
 def text_hash(text: str) -> str:
-    """
-    Stable hash for deduplication.
-    """
 
     return hashlib.md5(
-        str(text).encode()
+        text.encode()
     ).hexdigest()
