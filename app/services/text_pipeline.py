@@ -105,8 +105,17 @@ if not IS_PRODUCTION:
 
     print("XLM-RoBERTa loaded.")
 
+FASTTEXT_PATH = "models_trained/lid.176.bin"
+
 print("Loading fastText...")
-ft_model = fasttext.load_model("models_trained/lid.176.bin")
+
+if not os.path.exists(FASTTEXT_PATH):
+    raise FileNotFoundError(
+        f"FastText model not found: {FASTTEXT_PATH}"
+    )
+
+ft_model = fasttext.load_model(FASTTEXT_PATH)
+
 print("fastText loaded.")
 
 # ── Language detection ─────────────────────────────────────
