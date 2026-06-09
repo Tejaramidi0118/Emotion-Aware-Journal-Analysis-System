@@ -7,7 +7,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str
 
     GROQ_API_KEY: str
+    ENVIRONMENT: str
     hf_token: str
+    HF_API_KEY: str
     # QDRANT_URL:     str = ""
     # QDRANT_API_KEY: str = ""
     SUPABASE_DB_URL: str = ""

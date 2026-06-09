@@ -34,7 +34,20 @@ class SpeechEmotionModel(nn.Module):
 
 # ── Load models once at startup ────────────────────────────
 print("Loading Whisper...")
-whisper_model = whisper.load_model("large-v3", device=DEVICE)
+whisper_model = None
+
+def get_whisper_model():
+    global whisper_model
+
+    if whisper_model is None:
+        print("Loading Whisper...")
+        whisper_model = whisper.load_model(
+            "large-v3",
+            device=DEVICE
+        )
+        print("Whisper loaded.")
+
+    return whisper_model
 print("Whisper loaded.")
 
 print("Loading Speech CNN...")
@@ -59,7 +72,8 @@ def extract_features(file_path: str, max_len=200):
 
 # ── Whisper STT ────────────────────────────────────────────
 def transcribe_audio(file_path: str):
-    result     = whisper_model.transcribe(file_path, task="transcribe", fp16=(DEVICE=="cuda"))
+    model = get_whisper_model()
+    result     = model.transcribe(file_path, task="transcribe", fp16=(DEVICE=="cuda"))
     transcript = result["text"].strip()
     language   = result["language"]
     stt_failure = len(transcript.split()) < 3

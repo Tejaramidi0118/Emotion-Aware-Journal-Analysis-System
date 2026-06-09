@@ -3,7 +3,8 @@ load_dotenv()
 
 from fastapi import FastAPI, Request
 from app.database import Base, engine
-from app.routers import auth, journal_text, journal_voice, feedback
+from app.routers import auth, journal_text, feedback
+# from app.routers import auth, journal_text, journal_voice, feedback
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,7 +21,7 @@ app = FastAPI(
 # Include routers
 app.include_router(auth.router)
 app.include_router(journal_text.router)
-app.include_router(journal_voice.router)
+# app.include_router(journal_voice.router)
 app.include_router(feedback.router)
 
 

@@ -1,6 +1,12 @@
-import torch
-import torch.nn as nn
-from transformers import AutoTokenizer, AutoModel
+import os
+
+IS_PRODUCTION = os.getenv("ENVIRONMENT") == "production"
+
+if not IS_PRODUCTION:
+    import torch
+    import torch.nn as nn
+    from transformers import AutoTokenizer, AutoModel
+
 import fasttext
 import re
 import unicodedata
@@ -14,7 +20,16 @@ TARGET_EMOTIONS = [
 ]
 THRESHOLD = 0.75
 MAX_LEN   = 128
-DEVICE    = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+if not IS_PRODUCTION:
+    DEVICE = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+else:
+    DEVICE = "cpu"
 
 # ── First person patterns (English + Indic) ────────────────
 FIRST_PERSON_PATTERNS = [
@@ -48,28 +63,47 @@ FIRST_PERSON_PATTERNS = [
 ]
 
 # ── Model definition ───────────────────────────────────────
-class EmotionClassifier(nn.Module):
-    def __init__(self, model_name, num_labels, dropout=0.1):
-        super().__init__()
-        self.encoder    = AutoModel.from_pretrained(model_name)
-        self.dropout    = nn.Dropout(dropout)
-        self.classifier = nn.Linear(self.encoder.config.hidden_size, num_labels)
+if not IS_PRODUCTION:
+    class EmotionClassifier(nn.Module):
+        def __init__(self, model_name, num_labels, dropout=0.1):
+            super().__init__()
+            self.encoder    = AutoModel.from_pretrained(model_name)
+            self.dropout    = nn.Dropout(dropout)
+            self.classifier = nn.Linear(self.encoder.config.hidden_size, num_labels)
 
-    def forward(self, input_ids, attention_mask):
-        outputs    = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
-        cls_output = outputs.last_hidden_state[:, 0, :]
-        cls_output = self.dropout(cls_output)
-        return self.classifier(cls_output)
+        def forward(self, input_ids, attention_mask):
+            outputs    = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+            cls_output = outputs.last_hidden_state[:, 0, :]
+            cls_output = self.dropout(cls_output)
+            return self.classifier(cls_output)
 
 # ── Load models once at startup ────────────────────────────
-print("Loading XLM-RoBERTa...")
-tokenizer = AutoTokenizer.from_pretrained(settings.XLM_BASE_MODEL)
-xlm_model = EmotionClassifier(settings.XLM_BASE_MODEL, len(TARGET_EMOTIONS))
-checkpoint = torch.load(settings.XLM_MODEL_PATH, map_location=DEVICE)
-xlm_model.load_state_dict(checkpoint["model_state_dict"])
-xlm_model = xlm_model.to(DEVICE)
-xlm_model.eval()
-print("XLM-RoBERTa loaded.")
+if not IS_PRODUCTION:
+
+    print("Loading XLM-RoBERTa...")
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        settings.XLM_BASE_MODEL
+    )
+
+    xlm_model = EmotionClassifier(
+        settings.XLM_BASE_MODEL,
+        len(TARGET_EMOTIONS)
+    )
+
+    checkpoint = torch.load(
+        settings.XLM_MODEL_PATH,
+        map_location=DEVICE
+    )
+
+    xlm_model.load_state_dict(
+        checkpoint["model_state_dict"]
+    )
+
+    xlm_model = xlm_model.to(DEVICE)
+    xlm_model.eval()
+
+    print("XLM-RoBERTa loaded.")
 
 print("Loading fastText...")
 ft_model = fasttext.load_model("models_trained/lid.176.bin")
@@ -113,46 +147,61 @@ def filter_to_writer_sentences(text: str) -> str:
     return " ".join(writer_sentences)
 
 # ── XLM-RoBERTa inference ──────────────────────────────────
-def classify_emotion(text: str):
-    encoding = tokenizer(
-        text,
-        max_length=MAX_LEN,
-        padding="max_length",
-        truncation=True,
-        return_tensors="pt"
-    )
-    input_ids      = encoding["input_ids"].to(DEVICE)
-    attention_mask = encoding["attention_mask"].to(DEVICE)
+if not IS_PRODUCTION:
+    def classify_emotion(text: str):
+        encoding = tokenizer(
+            text,
+            max_length=MAX_LEN,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
+        )
+        input_ids      = encoding["input_ids"].to(DEVICE)
+        attention_mask = encoding["attention_mask"].to(DEVICE)
 
-    with torch.no_grad():
-        logits = xlm_model(input_ids, attention_mask)
-        probs  = torch.sigmoid(logits).cpu().numpy()[0]
+        with torch.no_grad():
+            logits = xlm_model(input_ids, attention_mask)
+            probs  = torch.sigmoid(logits).cpu().numpy()[0]
 
-    scores     = {e: round(float(probs[i]), 4) for i, e in enumerate(TARGET_EMOTIONS)}
-    dominant   = TARGET_EMOTIONS[int(probs.argmax())]
-    active     = [e for e, s in scores.items() if s >= THRESHOLD]
-    confidence = float(probs.max())
-    low_conf   = confidence < 0.50  # raised from 0.40 — stricter fallback trigger
+        scores     = {e: round(float(probs[i]), 4) for i, e in enumerate(TARGET_EMOTIONS)}
+        dominant   = TARGET_EMOTIONS[int(probs.argmax())]
+        active     = [e for e, s in scores.items() if s >= THRESHOLD]
+        confidence = float(probs.max())
+        low_conf   = confidence < 0.50  # raised from 0.40 — stricter fallback trigger
 
-    return scores, dominant, active, round(confidence, 4), low_conf
-
-# ── Full text pipeline ─────────────────────────────────────
-# Add this import at the top of text_pipeline.py
-from app.services.langchain_service import classify_with_groq
+        return scores, dominant, active, round(confidence, 4), low_conf
 
 def run_text_pipeline(text: str) -> dict:
-    from app.services.langchain_service import classify_with_groq
 
-    lang_code, lang_conf, low_lang = detect_language(text)
+    if IS_PRODUCTION:
+        from app.services.hf_inference import (
+            classify_with_hf,
+            detect_language_hf
+        )
+
+        lang_code = detect_language_hf(text)
+        low_lang = False
+    else:
+        lang_code, lang_conf, low_lang = detect_language(text)
     cleaned     = clean_text(text)
     writer_text = filter_to_writer_sentences(cleaned)
 
     # ── Step 1: XLM-RoBERTa on filtered text ──────────────
     xlm_scores = xlm_dominant = xlm_active = xlm_conf = xlm_low = None
-    if writer_text:
-        xlm_scores, xlm_dominant, xlm_active, xlm_conf, xlm_low = classify_emotion(writer_text)
-    else:
+    if IS_PRODUCTION:
+        xlm_scores = None
+        xlm_dominant = None
+        xlm_active = None
+        xlm_conf = None
         xlm_low = True
+
+        # We'll map HF output later
+
+    else:
+        if writer_text:
+            xlm_scores, xlm_dominant, xlm_active, xlm_conf, xlm_low = classify_emotion(writer_text)
+        else:
+            xlm_low = True
 
     # ── Step 2: Always run Groq for second opinion ─────────
     groq_result = None
