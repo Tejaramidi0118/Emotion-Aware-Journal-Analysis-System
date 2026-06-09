@@ -1,44 +1,162 @@
 """
-Builds a clean, structured context string from retrieved documents.
+Builds a clean, structured context string
+from retrieved RAG documents.
+
 Injected into the LLM suggestion prompt.
 """
 
 
 def build_rag_context(
-    wellness_docs:   list,
-    user_memory:     list,
-    past_successes:  list,
-    dominant_emotion: str,
-    ems: float,
-    burnout_score: float
+    wellness_docs,
+    user_memory,
+    past_successes,
+    negative_interventions,
+    dominant_emotion,
+    ems,
+    burnout_score
 ) -> str:
     """
-    Assembles retrieved context into a structured string for LLM injection.
-    Keeps context concise to avoid token waste.
+    Assemble retrieved context into a concise,
+    emotionally useful prompt context.
     """
+
     parts = []
 
-    # Wellness knowledge
+    # =====================================================
+    # Emotional State Summary
+    # =====================================================
+
+    parts.append(
+        f"""
+Current emotional state:
+- Dominant emotion: {dominant_emotion}
+- Stress (EMS): {ems:.0f}/100
+- Burnout Risk: {burnout_score:.0f}/100
+""".strip()
+    )
+
+    # =====================================================
+    # Wellness Knowledge
+    # =====================================================
+
     if wellness_docs:
-        tips = " | ".join([d["content"][:120] for d in wellness_docs[:2]])
-        parts.append(f"Relevant wellness knowledge: {tips}")
 
-    # User emotional memory
-    if user_memory:
-        memories = []
-        for m in user_memory[:2]:
-            memories.append(
-                f"On {m.get('date','a past day')} felt {m.get('emotion','')}"
-                f" (stress {m.get('ems',0):.0f}/100)"
+        wellness_text = []
+
+        for d in wellness_docs[:2]:
+
+            content = (
+                d.get("content", "")
+                [:180]
+                .strip()
             )
-        parts.append("User's recent emotional pattern: " + " | ".join(memories))
 
-    # Past successful interventions
+            if content:
+                wellness_text.append(
+                    content
+                )
+
+        if wellness_text:
+
+            parts.append(
+                "Relevant wellness insights:\n"
+                + "\n".join(
+                    f"- {x}"
+                    for x in wellness_text
+                )
+            )
+
+    # =====================================================
+    # User Emotional Memory
+    # =====================================================
+
+    if user_memory:
+
+        memory_text = []
+
+        for m in user_memory[:2]:
+
+            emotion = m.get(
+                "emotion", ""
+            )
+
+            stress = round(
+                m.get("ems", 0)
+            )
+
+            date = m.get(
+                "date",
+                "a previous day"
+            )
+
+            memory_text.append(
+                f"On {date}, "
+                f"user felt "
+                f"{emotion} "
+                f"(stress {stress}/100)"
+            )
+
+        if memory_text:
+
+            parts.append(
+                "Relevant emotional history:\n"
+                + "\n".join(
+                    f"- {x}"
+                    for x in memory_text
+                )
+            )
+
+    # =====================================================
+    # Helpful Interventions
+    # =====================================================
+
     if past_successes:
-        worked = [s["suggestion"][:80] for s in past_successes[:2]]
-        parts.append("What helped this user before: " + " | ".join(worked))
 
-    if not parts:
-        return ""
+        helpful = []
 
-    return "\n".join(parts)
+        for suggestion in past_successes[:2]:
+
+            helpful.append(
+                suggestion[:120]
+            )
+
+        if helpful:
+
+            parts.append(
+                "What helped before:\n"
+                + "\n".join(
+                    f"- {x}"
+                    for x in helpful
+                )
+            )
+
+    # =====================================================
+    # Negative Feedback Memory
+    # =====================================================
+
+    if negative_interventions:
+
+        avoided = []
+
+        for suggestion in negative_interventions[:2]:
+
+            avoided.append(
+                suggestion[:120]
+            )
+
+        if avoided:
+
+            parts.append(
+                "Previously disliked interventions "
+                "(avoid repeating):\n"
+                + "\n".join(
+                    f"- {x}"
+                    for x in avoided
+                )
+            )
+
+    # =====================================================
+    # Final Context
+    # =====================================================
+
+    return "\n\n".join(parts)

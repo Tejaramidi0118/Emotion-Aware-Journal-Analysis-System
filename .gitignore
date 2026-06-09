@@ -66,3 +66,13 @@ frontend/build/
 frontend/.env
 frontend/.env.local
 frontend/.env.production
+
+
+docs
+Model Architecture.png
+Project_Report.md
+SystemArchitecture.png
+
+Emotion-Journal-Analysis_api_key.txt
+Papers/Emotion_Journal_Analysis_System.pdf
+translation_results.png

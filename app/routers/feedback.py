@@ -67,20 +67,37 @@ def submit_feedback(req: FeedbackRequest):
             "suppressed":       req.feedback_score <= -10,
             "last_updated":     timestamp
         })
-    if req.feedback_score >= 3:
+    if req.feedback_score != 0:
         try:
-            # Get the suggestion from agent_state
-            last_state = agent_state_col.find_one({"entry_id": req.entry_id})
-            suggestion = last_state.get("suggestion","") if last_state else req.suggestion_item
-            store_intervention_feedback(
-                user_id          = req.user_id,
-                entry_id         = req.entry_id,
-                suggestion       = suggestion,
-                dominant_emotion = req.dominant_emotion,
-                feedback_score   = req.feedback_score
+            last_state = agent_state_col.find_one(
+                {"entry_id": req.entry_id}
             )
+
+            suggestion = (
+                last_state.get("suggestion", "")
+                if last_state
+                else req.suggestion_item
+            )
+
+            store_intervention_feedback(
+                user_id=req.user_id,
+                entry_id=req.entry_id,
+                suggestion=suggestion,
+                dominant_emotion=req.dominant_emotion,
+                feedback_score=req.feedback_score
+            )
+
+            print(
+                f"RAG feedback stored: "
+                f"{req.feedback_score}"
+            )
+
         except Exception as e:
-            print(f"RAG store success failed (non-critical): {e}")
+            print(
+                f"RAG store success failed "
+                f"(non-critical): {e}"
+            )
+    
     if req.feedback_score >= 4:
         message = "Great! We'll suggest this more often when you feel this way."
     elif req.feedback_score >= 1:

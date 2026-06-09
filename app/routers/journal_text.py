@@ -56,6 +56,7 @@ def process_text_journal(req: TextJournalRequest, db: Session = Depends(get_db))
     agent = run_agent_pipeline(
         user_id          = req.user_id,
         entry_id         = entry_id,
+        journal_text     = req.text,
         dominant_emotion = result["dominant_emotion"],
         active_emotions  = result["active_emotions"],
         emotion_scores   = result["emotion_scores"],

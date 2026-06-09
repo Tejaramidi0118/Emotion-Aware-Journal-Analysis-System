@@ -19,12 +19,12 @@ def retrieve_wellness_context(
     top_k: int = 2
 ):
     """
-    Retrieve relevant wellness content
+    Retrieve wellness content
     based on emotional state.
     """
 
     query = (
-        f"{dominant_emotion} emotion "
+        f"{dominant_emotion} "
         f"stress {round(ems)} "
         f"burnout {round(burnout_score)} "
         f"coping wellness"
@@ -37,17 +37,19 @@ def retrieve_wellness_context(
         top_k=top_k
     )
 
+    print("Wellness raw results:", results)
+
     return [
         {
             "source": "wellness_kb",
             "topic": r.get("topic", ""),
             "content": r.get("content", ""),
-            "similarity": r.get("similarity", 0)
+            "similarity": float(
+                r.get("similarity", 0)
+            )
         }
-        for r in results
-        if r.get("similarity", 0) > 0.30
+        for r in results[:top_k]
     ]
-
 
 # =====================================================
 # User Memory Retrieval
@@ -69,6 +71,9 @@ def retrieve_user_memory(
     )
 
     vector = embed_text(query)
+
+    print("Embedding length:", len(vector))
+    print("Embedding sample:", vector[:5])
 
     results = search_user_memory(
         query_embedding=vector,
@@ -92,7 +97,7 @@ def retrieve_user_memory(
             )
         }
         for r in results
-        if r.get("similarity", 0) > 0.30
+        if True
     ]
 
 
@@ -247,13 +252,18 @@ def store_intervention_feedback(
     < 3 → negative memory
     """
 
+    print(
+        f"STORE INTERVENTION | "
+        f"score={feedback_score} | "
+        f"emotion={dominant_emotion}"
+    )
     if not suggestion:
         return
 
     vector = embed_text(
         suggestion[:300]
     )
-
+    print("INSERTING INTO successful_interventions_vectors")
     insert_intervention(
         user_id=user_id,
         entry_id=entry_id,

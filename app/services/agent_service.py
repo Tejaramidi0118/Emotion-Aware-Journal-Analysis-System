@@ -428,6 +428,7 @@ def get_interest_profile(user_id: str) -> dict:
 def run_agent_pipeline(
     user_id: str,
     entry_id: str,
+    journal_text: str,
     dominant_emotion: str,
     active_emotions: list,
     emotion_scores: dict,
@@ -480,24 +481,66 @@ def run_agent_pipeline(
 
     print(f"  Music Tracks Found: {len(music_result)}")
     try:
-        wellness_docs  = retrieve_wellness_context(dominant_emotion, ems, burnout_score)
-        user_memory    = retrieve_user_memory(user_id, dominant_emotion)
-        past_successes = retrieve_successful_interventions(user_id, dominant_emotion)
-        rag_context    = build_rag_context(
-            wellness_docs, user_memory, past_successes,
-            dominant_emotion, ems, burnout_score
+        wellness_docs = retrieve_wellness_context(
+            dominant_emotion,
+            ems,
+            burnout_score
         )
-        print(f"  RAG: {len(wellness_docs)} wellness + {len(user_memory)} memories + {len(past_successes)} successes")
-    except Exception as e:
-        print(f"  RAG retrieval failed (non-critical): {e}")
-        rag_context = ""
 
+        user_memory = retrieve_user_memory(
+            user_id,
+            dominant_emotion
+        )
+
+        successful_interventions = (
+            retrieve_successful_interventions(
+                user_id,
+                dominant_emotion
+            )
+        )
+
+        positive_interventions = (
+            successful_interventions.get(
+                "positive", []
+            )
+        )
+
+        negative_interventions = (
+            successful_interventions.get(
+                "negative", []
+            )
+        )
+
+        rag_context = build_rag_context(
+            wellness_docs=wellness_docs,
+            user_memory=user_memory,
+            past_successes=positive_interventions,
+            negative_interventions=negative_interventions,
+            dominant_emotion=dominant_emotion,
+            ems=ems,
+            burnout_score=burnout_score
+        )
+
+        print(
+            f"  RAG: "
+            f"{len(wellness_docs)} wellness + "
+            f"{len(user_memory)} memories + "
+            f"{len(positive_interventions)} helpful + "
+            f"{len(negative_interventions)} avoid"
+        )
+
+    except Exception as e:
+        print(
+            f"  RAG retrieval failed "
+            f"(non-critical): {e}"
+        )
+        rag_context = ""
     # Store this journal in user memory for future retrieval
     try:
         store_journal_embedding(
             user_id          = user_id,
             entry_id         = entry_id,
-            text             = "",  # will be filled by router
+            text             = journal_text,
             dominant_emotion = dominant_emotion,
             ems              = ems,
             date             = submission_time.strftime("%Y-%m-%d")
@@ -507,6 +550,7 @@ def run_agent_pipeline(
 
     # Agent 4 — Generate Suggestion via Groq
     suggestion = generate_suggestion(
+        journal_text      = journal_text,
         dominant_emotion  = dominant_emotion,
         active_emotions   = active_emotions,
         emotion_scores    = emotion_scores,
@@ -518,6 +562,7 @@ def run_agent_pipeline(
         user_id           = user_id,
         ems               = ems,
         ems_trend         = ems_result["trend"],
+        burnout_score=burnout_score,
         rag_context       = rag_context    # NEW
     )
 

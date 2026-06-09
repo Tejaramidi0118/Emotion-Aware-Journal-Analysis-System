@@ -5,8 +5,17 @@ Pre-written wellness content chunked and embedded once.
 Stores vectors in Supabase pgvector.
 """
 
-from app.rag.embedder import embed_text, text_hash
-from app.rag.vector_store import insert_wellness
+from sqlalchemy import text
+
+from app.rag.embedder import (
+    embed_text,
+    text_hash
+)
+
+from app.rag.vector_store import (
+    insert_wellness,
+    engine
+)
 
 
 # =====================================================
@@ -128,29 +137,43 @@ def chunk_text(
 ) -> list:
     """
     Split long wellness text into chunks.
-    Helps retrieval quality.
     """
 
-    sentences = text.replace(". ", ".|").split("|")
+    sentences = (
+        text.replace(". ", ".|")
+        .split("|")
+    )
 
     chunks = []
     current = ""
 
     for sent in sentences:
 
-        if len(current) + len(sent) <= max_chars:
+        if (
+            len(current)
+            + len(sent)
+            <= max_chars
+        ):
             current += sent + " "
 
         else:
             if current.strip():
-                chunks.append(current.strip())
+                chunks.append(
+                    current.strip()
+                )
 
             current = sent + " "
 
     if current.strip():
-        chunks.append(current.strip())
+        chunks.append(
+            current.strip()
+        )
 
-    return chunks if chunks else [text]
+    return (
+        chunks
+        if chunks
+        else [text]
+    )
 
 
 # =====================================================
@@ -159,16 +182,43 @@ def chunk_text(
 
 def build_wellness_kb():
     """
-    Build wellness knowledge base
-    and store embeddings in Supabase.
-    Safe to call multiple times.
+    Build wellness knowledge base once.
+
+    Prevent duplicate inserts
+    on every backend restart.
     """
 
-    print("Building wellness knowledge base...")
+    with engine.connect() as conn:
+
+        existing_count = conn.execute(
+            text("""
+            SELECT COUNT(*)
+            FROM wellness_kb_vectors
+            """)
+        ).scalar()
+
+    # Already exists → skip rebuild
+    if existing_count and existing_count > 0:
+
+        print(
+            f"Wellness KB already exists "
+            f"({existing_count} chunks). "
+            f"Skipping rebuild."
+        )
+
+        return
+
+    print(
+        "Building wellness knowledge base..."
+    )
 
     stored = 0
 
-    for topic, emotion_tags, content in WELLNESS_DOCS:
+    for (
+        topic,
+        emotion_tags,
+        content
+    ) in WELLNESS_DOCS:
 
         chunks = chunk_text(content)
 
@@ -187,4 +237,7 @@ def build_wellness_kb():
 
             stored += 1
 
-    print(f"Wellness KB ready: {stored} chunks stored.")
+    print(
+        f"Wellness KB ready: "
+        f"{stored} chunks stored."
+    )
