@@ -1,7 +1,5 @@
-import smtplib
+import requests
 
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 from app.config import settings
 
@@ -12,40 +10,24 @@ def send_email(
     html_content: str
 ):
 
-    sender_email = settings.EMAIL_ADDRESS
-    sender_password = settings.EMAIL_APP_PASSWORD
-
-    message = MIMEMultipart()
-
-    message["From"] = sender_email
-    message["To"] = recipient_email
-    message["Subject"] = subject
-
-    message.attach(
-        MIMEText(
-            html_content,
-            "html"
-        )
+    response = requests.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "from": "onboarding@resend.dev",
+            "to": [recipient_email],
+            "subject": subject,
+            "html": html_content
+        }
     )
 
-    server = smtplib.SMTP_SSL(
-        "smtp.gmail.com",
-        465
-    )
+    print("Resend Status:", response.status_code)
+    print("Resend Response:", response.text)
 
-
-    server.login(
-        sender_email,
-        sender_password
-    )
-
-    server.send_message(
-        message
-    )
-
-    server.quit()
-
-
+    response.raise_for_status()
 def send_signup_otp(
     email: str,
     otp: str
