@@ -5,6 +5,8 @@ from fastapi import FastAPI, Request
 from app.database import Base, engine
 from app.routers import auth, journal_text, feedback
 # from app.routers import auth, journal_text, journal_voice, feedback
+from datetime import datetime
+import pytz
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -54,6 +56,20 @@ def health():
         "status": "healthy"
     }
 
+@app.get("/debug/time")
+def debug_time():
+
+    utc_now = datetime.utcnow()
+
+    india_now = datetime.now(
+        pytz.timezone("Asia/Kolkata")
+    )
+
+    return {
+        "utc_time": str(utc_now),
+        "india_time": str(india_now),
+        "hour": india_now.hour
+    }
 
 @app.middleware("http")
 async def verify_user_isolation(request: Request, call_next):
