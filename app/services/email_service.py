@@ -28,7 +28,7 @@ def send_email(
         )
     )
 
-    server = smtplib.SMTP(
+    server = smtplib.SMTP_SSL(
         "smtp.gmail.com",
         465
     )
