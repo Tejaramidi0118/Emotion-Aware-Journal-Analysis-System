@@ -7,6 +7,7 @@ from app.routers import auth, journal_text, feedback
 # from app.routers import auth, journal_text, journal_voice, feedback
 from datetime import datetime
 import pytz
+from app.database import mongo_db
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,18 +30,30 @@ app.include_router(feedback.router)
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize RAG system at startup."""
+
     try:
+
         from app.rag.wellness_kb import build_wellness_kb
 
-        # Build wellness knowledge base
         build_wellness_kb()
+
+        mongo_db["email_otps"].create_index(
+            "expires_at",
+            expireAfterSeconds=0
+        )
+
+        mongo_db["verified_emails"].create_index(
+            "expires_at",
+            expireAfterSeconds=0
+        )
 
         print("RAG system initialized.")
 
     except Exception as e:
-        print(f"RAG init failed (non-critical): {e}")
 
+        print(
+            f"RAG init failed: {e}"
+        )
 
 @app.get("/")
 def root():
@@ -82,6 +95,10 @@ async def verify_user_isolation(request: Request, call_next):
     public_routes = [
         "/auth/signup",
         "/auth/login",
+        "/auth/send-otp",
+        "/auth/verify-otp",
+        "/auth/forgot-password",
+        "/auth/reset-password",
         "/",
         "/health"
     ]

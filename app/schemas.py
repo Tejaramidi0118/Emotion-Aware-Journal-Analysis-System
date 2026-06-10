@@ -39,3 +39,21 @@ class SpeechEmotionResponse(EmotionVectorResponse):
     dominant_acoustic: Optional[str] = None
     acoustic_excluded: bool = False
     stt_failure: bool = False
+
+class SendOTPRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    new_password: str

@@ -21,7 +21,11 @@ class Settings(BaseSettings):
     XLM_MODEL_PATH: str = ""
     CNN_MODEL_PATH: str = ""
     XLM_BASE_MODEL: str = "xlm-roberta-base"
+    RESEND_API_KEY: str
 
+    EMAIL_ADDRESS: str
+    EMAIL_APP_PASSWORD: str
+    
     class Config:
         env_file = ".env"
 
