@@ -37,15 +37,6 @@ async def startup_event():
 
         build_wellness_kb()
 
-        mongo_db["email_otps"].create_index(
-            "expires_at",
-            expireAfterSeconds=0
-        )
-
-        mongo_db["verified_emails"].create_index(
-            "expires_at",
-            expireAfterSeconds=0
-        )
 
         print("RAG system initialized.")
 
@@ -95,10 +86,6 @@ async def verify_user_isolation(request: Request, call_next):
     public_routes = [
         "/auth/signup",
         "/auth/login",
-        "/auth/send-otp",
-        "/auth/verify-otp",
-        "/auth/forgot-password",
-        "/auth/reset-password",
         "/",
         "/health"
     ]
