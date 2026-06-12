@@ -6,6 +6,7 @@ import re
 from app.services.text_pipeline import run_text_pipeline
 from app.config import settings
 from huggingface_hub import InferenceClient
+from huggingface_hub import hf_hub_download
 
 
 DEVICE = "cpu"
@@ -33,10 +34,25 @@ class SpeechEmotionModel(nn.Module):
     def forward(self, x):
         return self.fc(self.conv(x))
 
-
-print("Loading Speech CNN...")
 cnn_model = SpeechEmotionModel(num_classes=8).to(DEVICE)
-cnn_model.load_state_dict(torch.load(settings.CNN_MODEL_PATH, map_location=DEVICE))
+print("Downloading Speech CNN...")
+
+model_path = hf_hub_download(
+    repo_id="TejaRamidi/echomind-speech-emotion",
+    filename="best_speech_model.pth",
+    token=settings.HF_TOKEN
+)
+
+print("Speech model downloaded.")
+
+cnn_model.load_state_dict(
+    torch.load(
+        model_path,
+        map_location=DEVICE
+    )
+)
+
+cnn_model.eval()
 cnn_model.eval()
 print("Speech CNN loaded.")
 
