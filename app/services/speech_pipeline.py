@@ -34,27 +34,37 @@ class SpeechEmotionModel(nn.Module):
     def forward(self, x):
         return self.fc(self.conv(x))
 
-cnn_model = SpeechEmotionModel(num_classes=8).to(DEVICE)
-print("Downloading Speech CNN...")
+cnn_model = None
 
-model_path = hf_hub_download(
-    repo_id="TejaRamidi/echomind-speech-emotion",
-    filename="best_speech_model.pth",
-    token=settings.HF_TOKEN
-)
+def get_cnn_model():
+    global cnn_model
 
-print("Speech model downloaded.")
+    if cnn_model is None:
 
-cnn_model.load_state_dict(
-    torch.load(
-        model_path,
-        map_location=DEVICE
-    )
-)
+        print("Downloading Speech CNN...")
 
-cnn_model.eval()
-cnn_model.eval()
-print("Speech CNN loaded.")
+        model_path = hf_hub_download(
+            repo_id="TejaRamidi/echomind-speech-emotion",
+            filename="best_speech_model.pth",
+            token=settings.HF_TOKEN
+        )
+
+        model = SpeechEmotionModel(num_classes=8).to(DEVICE)
+
+        model.load_state_dict(
+            torch.load(
+                model_path,
+                map_location=DEVICE
+            )
+        )
+
+        model.eval()
+
+        cnn_model = model
+
+        print("Speech CNN loaded.")
+
+    return cnn_model
 
 # ── Feature extraction ─────────────────────────────────────
 def extract_features(file_path: str, max_len=200):
@@ -102,17 +112,24 @@ def transcribe_audio(file_path: str):
 
 # ── CNN acoustic emotion ────────────────────────────────────
 def get_acoustic_emotion(file_path: str):
-    features = extract_features(file_path)
-    tensor   = torch.tensor(features, dtype=torch.float).unsqueeze(0).unsqueeze(0).to(DEVICE)
-    with torch.no_grad():
-        logits = cnn_model(tensor)
-        probs  = torch.softmax(logits, dim=1).cpu().numpy()[0]
-    scores   = {EMOTION_LABELS[i]: round(float(probs[i]), 4) for i in range(len(EMOTION_LABELS))}
-    dominant = EMOTION_LABELS[int(probs.argmax())]
-    confidence = float(probs.max())
-    excluded = confidence < 0.50
-    return scores, dominant, round(confidence, 4), excluded
 
+    model = get_cnn_model()
+
+    features = extract_features(file_path)
+
+    tensor = (
+        torch.tensor(
+            features,
+            dtype=torch.float
+        )
+        .unsqueeze(0)
+        .unsqueeze(0)
+        .to(DEVICE)
+    )
+
+    with torch.no_grad():
+        logits = model(tensor)
+        probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
 # ── Full speech pipeline ───────────────────────────────────
 def run_speech_pipeline(audio_path: str):
     # Step 1: Whisper STT

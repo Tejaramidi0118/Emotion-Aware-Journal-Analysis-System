@@ -107,16 +107,17 @@ if not IS_PRODUCTION:
 
 FASTTEXT_PATH = "models_trained/lid.176.bin"
 
-print("Loading fastText...")
+if not IS_PRODUCTION:
+    print("Loading fastText...")
 
-if not os.path.exists(FASTTEXT_PATH):
-    raise FileNotFoundError(
-        f"FastText model not found: {FASTTEXT_PATH}"
-    )
+    if not os.path.exists(FASTTEXT_PATH):
+        raise FileNotFoundError(
+            f"FastText model not found: {FASTTEXT_PATH}"
+        )
 
-ft_model = fasttext.load_model(FASTTEXT_PATH)
+    ft_model = fasttext.load_model(FASTTEXT_PATH)
 
-print("fastText loaded.")
+    print("fastText loaded.")
 
 # ── Language detection ─────────────────────────────────────
 def detect_language(text: str):
