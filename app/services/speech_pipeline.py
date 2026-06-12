@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 import librosa
 import numpy as np
-import whisper
 import re
-from app.services.text_pipeline import classify_emotion
+from app.services.text_pipeline import run_text_pipeline
 from app.config import settings
+from huggingface_hub import InferenceClient
+
 
 DEVICE = "cpu"
 
@@ -32,23 +33,6 @@ class SpeechEmotionModel(nn.Module):
     def forward(self, x):
         return self.fc(self.conv(x))
 
-# ── Load models once at startup ────────────────────────────
-print("Loading Whisper...")
-whisper_model = None
-
-def get_whisper_model():
-    global whisper_model
-
-    if whisper_model is None:
-        print("Loading Whisper...")
-        whisper_model = whisper.load_model(
-            "large-v3",
-            device=DEVICE
-        )
-        print("Whisper loaded.")
-
-    return whisper_model
-print("Whisper loaded.")
 
 print("Loading Speech CNN...")
 cnn_model = SpeechEmotionModel(num_classes=8).to(DEVICE)
@@ -71,13 +55,34 @@ def extract_features(file_path: str, max_len=200):
     return features
 
 # ── Whisper STT ────────────────────────────────────────────
+print("Initializing Hugging Face Whisper Client...")
+client = InferenceClient(
+    api_key=settings.HF_TOKEN
+)
+
 def transcribe_audio(file_path: str):
-    model = get_whisper_model()
-    result     = model.transcribe(file_path, task="transcribe", fp16=(DEVICE=="cuda"))
+
+
+    with open(file_path, "rb") as audio:
+
+        try:
+            audio_bytes = audio.read()
+
+            result = client.automatic_speech_recognition(
+                audio_bytes,
+                model="openai/whisper-large-v3"
+            )
+
+            print("HF Result:", result)
+
+        except Exception as e:
+            print("HF Whisper Error:", str(e))
+            return "", "unknown", True
+
     transcript = result["text"].strip()
-    language   = result["language"]
     stt_failure = len(transcript.split()) < 3
-    return transcript, language, stt_failure
+
+    return transcript, "unknown", stt_failure
 
 # ── CNN acoustic emotion ────────────────────────────────────
 def get_acoustic_emotion(file_path: str):
@@ -100,7 +105,7 @@ def run_speech_pipeline(audio_path: str):
         return {"stt_failure": True, "transcript": transcript}
 
     # Step 2: XLM-RoBERTa on transcript (shared model)
-    scores, dominant, active, conf, low_emo = classify_emotion(transcript)
+    text_result = run_text_pipeline(transcript)
 
     # Step 3: CNN acoustic emotion on raw audio
     acoustic_scores, dominant_acoustic, acoustic_conf, acoustic_excluded = get_acoustic_emotion(audio_path)
@@ -109,13 +114,14 @@ def run_speech_pipeline(audio_path: str):
         "transcript":         transcript,
         "detected_language":  language,
         "stt_failure":        False,
-        "emotion_scores":     scores,
-        "dominant_emotion":   dominant,
-        "active_emotions":    active,
-        "confidence":         conf,
-        "low_confidence_emotion": low_emo,
+        "emotion_scores":     text_result["emotion_scores"],
+        "dominant_emotion":   text_result["dominant_emotion"],
+        "active_emotions":    text_result["active_emotions"],
+        "confidence":         text_result["confidence"],
+        "low_confidence_emotion": text_result["low_confidence_emotion"],
         "acoustic_scores":    acoustic_scores,
         "dominant_acoustic":  dominant_acoustic,
         "acoustic_confidence": acoustic_conf,
         "acoustic_excluded":  acoustic_excluded,
     }
+

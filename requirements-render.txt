@@ -29,3 +29,5 @@ langchain-core==0.2.2
 
 requests
 supabase
+
+huggingface_hub>=0.30.0
