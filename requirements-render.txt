@@ -33,7 +33,6 @@ supabase
 huggingface_hub>=0.30.0
 
 torch==2.7.1
-torchaudio
 
 librosa==0.10.2
 soundfile
