@@ -1,0 +1,289 @@
+/* Reset & Core Aesthetics */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:root {
+  /* Calming Wellness Theme Color Palette */
+  --bg-app:          #f3f8fc; /* Softest wellness blue-gray background */
+  --bg-app-rgb:      243, 248, 252;
+  --surface-solid:   #ffffff;
+  --surface-glass:   rgba(255, 255, 255, 0.7);
+  --border-subtle:   rgba(224, 236, 250, 0.7);
+  
+  /* Text Colors */
+  --text-primary:    #0f172a; /* Dark slate for maximum readability */
+  --text-secondary:  #475569; /* Medium slate for labels & descriptions */
+  --text-muted:      #94a3b8; /* Light slate for indicators/meta */
+  
+  /* Accent Colors (Comforting & Balanced) */
+  --accent-blue:     #1e40af; /* Primary Indigo Blue */
+  --accent-blue-light:#dbeafe;
+  --primary-wellness:#059669; /* Soft Teal/Green */
+  --primary-wellness-light:#d1fae5;
+  --accent-amber:    #d97706; /* Warm Amber */
+  --accent-amber-light:#fef3c7;
+  --accent-rose:     #dc2626; /* Warm Rose for High Stress */
+  --accent-rose-light:#fee2e2;
+  --accent-violet:   #7c3aed;
+  --accent-violet-light:#f5f3ff;
+
+  /* Typography */
+  --font-family:     'Plus Jakarta Sans', 'Outfit', 'Inter', system-ui, sans-serif;
+  
+  /* Shadows & Radius */
+  --shadow-premium:  0 12px 34px -10px rgba(14, 165, 233, 0.08), 0 4px 12px -2px rgba(14, 165, 233, 0.03);
+  --shadow-hover:    0 20px 40px -15px rgba(14, 165, 233, 0.15), 0 8px 16px -4px rgba(14, 165, 233, 0.05);
+  --shadow-soft:     0 4px 20px -2px rgba(0, 0, 0, 0.02);
+  --radius-xl:       28px;
+  --radius-lg:       20px;
+  --radius-md:       14px;
+  --radius-sm:       8px;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(219, 234, 254, 0.4) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(167, 243, 208, 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(245, 243, 255, 0.3) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Custom Interactive States */
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+textarea:focus, input:focus, select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+
+@keyframes wave-glow {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+@keyframes bar-grow {
+  0%, 100% { height: 6px; }
+  50% { height: 26px; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-premium);
+}
+
+.glass-panel:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* Text Selection Override */
+::selection {
+  background: var(--accent-blue-light);
+  color: var(--accent-blue);
+}
+
+/* Dashboard Layout System */
+.dashboard-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-workspace-grid {
+  height: calc(100vh - 120px);
+  display: grid;
+  grid-template-columns: 290px 1fr 370px;
+  grid-template-rows: 1fr;
+  gap: 20px;
+  padding: 8px 24px 24px 24px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Scrollable column styling on desktop */
+.workspace-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.workspace-column.scrollable {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1200px) {
+  .main-workspace-grid {
+    grid-template-columns: 270px 1fr;
+    overflow-y: auto;
+  }
+  .workspace-column.right-panel {
+    grid-column: span 2;
+    height: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-wrapper {
+    height: auto;
+    overflow: auto;
+  }
+  .main-workspace-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 8px 16px 16px 16px;
+    gap: 16px;
+  }
+  .workspace-column {
+    height: auto;
+  }
+  .workspace-column.scrollable {
+    overflow-y: visible;
+  }
+  
+  /* Stacking columns vertically on mobile means hiding default panels */
+  .main-workspace-grid > .left-panel {
+    display: none !important;
+  }
+  .main-workspace-grid > .right-panel {
+    display: none !important;
+  }
+  
+  /* Mobile conditional views */
+  .mobile-show {
+    display: flex !important;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .glass-panel {
+    padding: 16px !important;
+  }
+
+  /* Make inner setups stack cleanly */
+  .inner-flex-wrap {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobile-show {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Navigation header responsive styling */
+  header.glass-panel {
+    margin: 10px 16px 8px 16px !important;
+    padding: 12px 16px !important;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+    text-align: center;
+  }
+
+  header.glass-panel nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  header.glass-panel nav button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Fix for charts */
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: 150px !important;
+  }
+
+  /* Login and signup pages */
+  .glass-panel {
+    padding: 24px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  header.glass-panel nav button {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+}
