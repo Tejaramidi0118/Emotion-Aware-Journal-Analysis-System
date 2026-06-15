@@ -201,109 +201,106 @@
 #         "total_found": len(all_tracks)
 #     }
 
-# app/services/youtube_music_service.py
 # Emotion-based music recommendation using curated song catalogue
-# Filtered by user's language and genre preferences
-
 SONG_CATALOGUE = {
     "Telugu": {
         "sad": [
-            {"title": "Ye Maya Chesave", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Ye+Maya+Chesave+Sid+Sriram"},
-            {"title": "Inkem Inkem", "artist": "Gopi Sundar", "youtube_url": "https://www.youtube.com/results?search_query=Inkem+Inkem+Gopi+Sundar"},
-            {"title": "Manasa Sancharare", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Manasa+Sancharare+KJ+Yesudas"},
-            {"title": "Marupu Raaledu", "artist": "SP Balasubrahmanyam", "youtube_url": "https://www.youtube.com/results?search_query=Marupu+Raaledu+SPB"},
-            {"title": "Nuvvu Nuvvu", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Nuvvu+Nuvvu+Sid+Sriram"},
+            {"title": "Ye Maya Chesave", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Ye+Maya+Chesave+Sid+Sriram", "genres": ["Tollywood Melody", "Soft Melodies"]},
+            {"title": "Inkem Inkem", "artist": "Gopi Sundar", "youtube_url": "https://www.youtube.com/results?search_query=Inkem+Inkem+Gopi+Sundar", "genres": ["Tollywood Melody", "Soft Melodies"]},
+            {"title": "Manasa Sancharare", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Manasa+Sancharare+KJ+Yesudas", "genres": ["Carnatic", "Devotional"]},
+            {"title": "Marupu Raaledu", "artist": "SP Balasubrahmanyam", "youtube_url": "https://www.youtube.com/results?search_query=Marupu+Raaledu+SPB", "genres": ["Tollywood Melody", "Soft Melodies"]},
+            {"title": "Nuvvu Nuvvu", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Nuvvu+Nuvvu+Sid+Sriram", "genres": ["Tollywood Melody", "Soft Melodies"]},
         ],
         "happy": [
-            {"title": "Buttabomma", "artist": "Armaan Malik", "youtube_url": "https://www.youtube.com/results?search_query=Buttabomma+Armaan+Malik"},
-            {"title": "Srivalli", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Srivalli+Sid+Sriram"},
-            {"title": "Neetho", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Neetho+Sid+Sriram"},
-            {"title": "Entharo Mahanubhavulu", "artist": "MS Subbulakshmi", "youtube_url": "https://www.youtube.com/results?search_query=Entharo+Mahanubhavulu+MS+Subbulakshmi"},
-            {"title": "Ramulo Ramula", "artist": "Anurag Kulkarni", "youtube_url": "https://www.youtube.com/results?search_query=Ramulo+Ramula+Anurag+Kulkarni"},
+            {"title": "Buttabomma", "artist": "Armaan Malik", "youtube_url": "https://www.youtube.com/results?search_query=Buttabomma+Armaan+Malik", "genres": ["Tollywood Melody", "Mass Songs"]},
+            {"title": "Srivalli", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Srivalli+Sid+Sriram", "genres": ["Tollywood Melody", "Soft Melodies"]},
+            {"title": "Neetho", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Neetho+Sid+Sriram", "genres": ["Tollywood Melody", "Soft Melodies"]},
+            {"title": "Entharo Mahanubhavulu", "artist": "MS Subbulakshmi", "youtube_url": "https://www.youtube.com/results?search_query=Entharo+Mahanubhavulu+MS+Subbulakshmi", "genres": ["Carnatic", "Devotional"]},
+            {"title": "Ramulo Ramula", "artist": "Anurag Kulkarni", "youtube_url": "https://www.youtube.com/results?search_query=Ramulo+Ramula+Anurag+Kulkarni", "genres": ["Tollywood Melody", "Mass Songs"]},
         ],
         "calm": [
-            {"title": "Nagumomu", "artist": "MS Subbulakshmi", "youtube_url": "https://www.youtube.com/results?search_query=Nagumomu+MS+Subbulakshmi"},
-            {"title": "Raghuvamsha Sudha", "artist": "SP Balasubrahmanyam", "youtube_url": "https://www.youtube.com/results?search_query=Raghuvamsha+Sudha+SPB"},
-            {"title": "Vathapi Ganapathim", "artist": "MS Subbulakshmi", "youtube_url": "https://www.youtube.com/results?search_query=Vathapi+Ganapathim+MS+Subbulakshmi"},
-            {"title": "Kannaane Kannaane", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Kannaane+Kannaane+Sid+Sriram"},
+            {"title": "Nagumomu", "artist": "MS Subbulakshmi", "youtube_url": "https://www.youtube.com/results?search_query=Nagumomu+MS+Subbulakshmi", "genres": ["Carnatic", "Devotional"]},
+            {"title": "Raghuvamsha Sudha", "artist": "SP Balasubrahmanyam", "youtube_url": "https://www.youtube.com/results?search_query=Raghuvamsha+Sudha+SPB", "genres": ["Carnatic", "Devotional"]},
+            {"title": "Vathapi Ganapathim", "artist": "MS Subbulakshmi", "youtube_url": "https://www.youtube.com/results?search_query=Vathapi+Ganapathim+MS+Subbulakshmi", "genres": ["Carnatic", "Devotional"]},
+            {"title": "Kannaane Kannaane", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Kannaane+Kannaane+Sid+Sriram", "genres": ["Tollywood Melody", "Soft Melodies"]},
         ],
         "angry": [
-            {"title": "Jai Balayya", "artist": "Devi Sri Prasad", "youtube_url": "https://www.youtube.com/results?search_query=Jai+Balayya+DSP"},
-            {"title": "Seeti Maar", "artist": "Rahul Nambiar", "youtube_url": "https://www.youtube.com/results?search_query=Seeti+Maar+Rahul+Nambiar"},
-            {"title": "Saami Saami", "artist": "Mounika Yadav", "youtube_url": "https://www.youtube.com/results?search_query=Saami+Saami+Mounika+Yadav"},
+            {"title": "Jai Balayya", "artist": "Devi Sri Prasad", "youtube_url": "https://www.youtube.com/results?search_query=Jai+Balayya+DSP", "genres": ["Mass Songs", "Tollywood Melody"]},
+            {"title": "Seeti Maar", "artist": "Rahul Nambiar", "youtube_url": "https://www.youtube.com/results?search_query=Seeti+Maar+Rahul+Nambiar", "genres": ["Mass Songs", "Tollywood Melody"]},
+            {"title": "Saami Saami", "artist": "Mounika Yadav", "youtube_url": "https://www.youtube.com/results?search_query=Saami+Saami+Mounika+Yadav", "genres": ["Tollywood Melody", "Mass Songs", "Telugu Folk"]},
         ],
     },
     "Hindi": {
         "sad": [
-            {"title": "Tum Hi Ho", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Tum+Hi+Ho+Arijit+Singh"},
-            {"title": "Channa Mereya", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Channa+Mereya+Arijit+Singh"},
-            {"title": "Agar Tum Saath Ho", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Agar+Tum+Saath+Ho+Arijit+Singh"},
-            {"title": "Kabhi Jo Baadal Barse", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Kabhi+Jo+Baadal+Barse+Arijit+Singh"},
-            {"title": "Phir Bhi Tumko Chaahunga", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Phir+Bhi+Tumko+Chaahunga+Arijit+Singh"},
+            {"title": "Tum Hi Ho", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Tum+Hi+Ho+Arijit+Singh", "genres": ["Bollywood", "Romantic", "Sad Songs"]},
+            {"title": "Channa Mereya", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Channa+Mereya+Arijit+Singh", "genres": ["Bollywood", "Sad Songs", "Romantic"]},
+            {"title": "Agar Tum Saath Ho", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Agar+Tum+Saath+Ho+Arijit+Singh", "genres": ["Bollywood", "Sad Songs", "Romantic"]},
+            {"title": "Kabhi Jo Baadal Barse", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Kabhi+Jo+Baadal+Barse+Arijit+Singh", "genres": ["Bollywood", "Romantic"]},
+            {"title": "Phir Bhi Tumko Chaahunga", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Phir+Bhi+Tumko+Chaahunga+Arijit+Singh", "genres": ["Bollywood", "Romantic", "Sad Songs"]},
         ],
         "happy": [
-            {"title": "Badtameez Dil", "artist": "Benny Dayal", "youtube_url": "https://www.youtube.com/results?search_query=Badtameez+Dil+Benny+Dayal"},
-            {"title": "London Thumakda", "artist": "Labh Janjua", "youtube_url": "https://www.youtube.com/results?search_query=London+Thumakda+Labh+Janjua"},
-            {"title": "Gallan Goodiyaan", "artist": "Various", "youtube_url": "https://www.youtube.com/results?search_query=Gallan+Goodiyaan+Dil+Dhadakne+Do"},
-            {"title": "Amplifier", "artist": "Imran Khan", "youtube_url": "https://www.youtube.com/results?search_query=Amplifier+Imran+Khan"},
-            {"title": "Zinda", "artist": "Siddharth Mahadevan", "youtube_url": "https://www.youtube.com/results?search_query=Zinda+Bhaag+song"},
+            {"title": "Badtameez Dil", "artist": "Benny Dayal", "youtube_url": "https://www.youtube.com/results?search_query=Badtameez+Dil+Benny+Dayal", "genres": ["Bollywood", "Romantic"]},
+            {"title": "London Thumakda", "artist": "Labh Janjua", "youtube_url": "https://www.youtube.com/results?search_query=London+Thumakda+Labh+Janjua", "genres": ["Bollywood"]},
+            {"title": "Gallan Goodiyaan", "artist": "Various", "youtube_url": "https://www.youtube.com/results?search_query=Gallan+Goodiyaan+Dil+Dhadakne+Do", "genres": ["Bollywood"]},
+            {"title": "Amplifier", "artist": "Imran Khan", "youtube_url": "https://www.youtube.com/results?search_query=Amplifier+Imran+Khan", "genres": ["Hindi Indie"]},
+            {"title": "Zinda", "artist": "Siddharth Mahadevan", "youtube_url": "https://www.youtube.com/results?search_query=Zinda+Bhaag+song", "genres": ["Bollywood"]},
         ],
         "calm": [
-            {"title": "Kun Faya Kun", "artist": "AR Rahman", "youtube_url": "https://www.youtube.com/results?search_query=Kun+Faya+Kun+AR+Rahman"},
-            {"title": "Tujh Mein Rab Dikhta Hai", "artist": "Roop Kumar Rathod", "youtube_url": "https://www.youtube.com/results?search_query=Tujh+Mein+Rab+Dikhta+Hai"},
-            {"title": "Raabta", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Raabta+Arijit+Singh"},
-            {"title": "Iktara", "artist": "Kavita Seth", "youtube_url": "https://www.youtube.com/results?search_query=Iktara+Kavita+Seth+Wake+Up+Sid"},
+            {"title": "Kun Faya Kun", "artist": "AR Rahman", "youtube_url": "https://www.youtube.com/results?search_query=Kun+Faya+Kun+AR+Rahman", "genres": ["Sufi", "Devotional", "Ghazal"]},
+            {"title": "Tujh Mein Rab Dikhta Hai", "artist": "Roop Kumar Rathod", "youtube_url": "https://www.youtube.com/results?search_query=Tujh+Mein+Rab+Dikhta+Hai", "genres": ["Bollywood", "Romantic"]},
+            {"title": "Raabta", "artist": "Arijit Singh", "youtube_url": "https://www.youtube.com/results?search_query=Raabta+Arijit+Singh", "genres": ["Bollywood", "Romantic"]},
+            {"title": "Iktara", "artist": "Kavita Seth", "youtube_url": "https://www.youtube.com/results?search_query=Iktara+Kavita+Seth+Wake+Up+Sid", "genres": ["Bollywood", "Sufi", "Hindi Indie"]},
         ],
         "angry": [
-            {"title": "Dangal Title Track", "artist": "Daler Mehndi", "youtube_url": "https://www.youtube.com/results?search_query=Dangal+Title+Track+Daler+Mehndi"},
-            {"title": "Sultan Title Track", "artist": "Sukhwinder Singh", "youtube_url": "https://www.youtube.com/results?search_query=Sultan+Title+Track+Sukhwinder"},
-            {"title": "Rocky Title Track", "artist": "Shravan", "youtube_url": "https://www.youtube.com/results?search_query=Rocky+Title+Track+Hindi"},
+            {"title": "Dangal Title Track", "artist": "Daler Mehndi", "youtube_url": "https://www.youtube.com/results?search_query=Dangal+Title+Track+Daler+Mehndi", "genres": ["Bollywood"]},
+            {"title": "Sultan Title Track", "artist": "Sukhwinder Singh", "youtube_url": "https://www.youtube.com/results?search_query=Sultan+Title+Track+Sukhwinder", "genres": ["Bollywood"]},
+            {"title": "Rocky Title Track", "artist": "Shravan", "youtube_url": "https://www.youtube.com/results?search_query=Rocky+Title+Track+Hindi", "genres": ["Bollywood"]},
         ],
     },
     "Malayalam": {
         "sad": [
-            {"title": "Piriyadha Varam Vendum", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Piriyadha+Varam+Vendum+KJ+Yesudas"},
-            {"title": "Mizhiyoram", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Mizhiyoram+KJ+Yesudas"},
-            {"title": "Mazhaye Mazhaye", "artist": "Sujatha", "youtube_url": "https://www.youtube.com/results?search_query=Mazhaye+Mazhaye+Malayalam"},
+            {"title": "Piriyadha Varam Vendum", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Piriyadha+Varam+Vendum+KJ+Yesudas", "genres": ["Malayalam Melody", "Classical"]},
+            {"title": "Mizhiyoram", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Mizhiyoram+KJ+Yesudas", "genres": ["Malayalam Melody", "Classical"]},
+            {"title": "Mazhaye Mazhaye", "artist": "Sujatha", "youtube_url": "https://www.youtube.com/results?search_query=Mazhaye+Mazhaye+Malayalam", "genres": ["Malayalam Melody"]},
         ],
         "happy": [
-            {"title": "Entammede Jimikki Kammal", "artist": "Shehnaz Akhtar", "youtube_url": "https://www.youtube.com/results?search_query=Entammede+Jimikki+Kammal"},
-            {"title": "Manikya Malaraya Poovi", "artist": "Vineeth Sreenivasan", "youtube_url": "https://www.youtube.com/results?search_query=Manikya+Malaraya+Poovi+Vineeth"},
-            {"title": "Thaniye", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Thaniye+Sid+Sriram+Malayalam"},
+            {"title": "Entammede Jimikki Kammal", "artist": "Shehnaz Akhtar", "youtube_url": "https://www.youtube.com/results?search_query=Entammede+Jimikki+Kammal", "genres": ["Malayalam Melody", "Mappila Songs"]},
+            {"title": "Manikya Malaraya Poovi", "artist": "Vineeth Sreenivasan", "youtube_url": "https://www.youtube.com/results?search_query=Manikya+Malaraya+Poovi+Vineeth", "genres": ["Malayalam Melody", "Mappila Songs"]},
+            {"title": "Thaniye", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Thaniye+Sid+Sriram+Malayalam", "genres": ["Malayalam Melody", "Soft Melodies"]},
         ],
         "calm": [
-            {"title": "Oru Murai Vanthu Paarthaya", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Oru+Murai+Vanthu+Paarthaya+KJ+Yesudas"},
-            {"title": "Thumbi Vaa", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Thumbi+Vaa+Sid+Sriram"},
+            {"title": "Oru Murai Vanthu Paarthaya", "artist": "KJ Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Oru+Murai+Vanthu+Paarthaya+KJ+Yesudas", "genres": ["Malayalam Melody", "Classical", "Devotional"]},
+            {"title": "Thumbi Vaa", "artist": "Sid Sriram", "youtube_url": "https://www.youtube.com/results?search_query=Thumbi+Vaa+Sid+Sriram", "genres": ["Malayalam Melody", "Classical"]},
         ],
         "angry": [
-            {"title": "Aadhi Bhagavan", "artist": "Vijay Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Aadhi+Bhagavan+Malayalam"},
+            {"title": "Aadhi Bhagavan", "artist": "Vijay Yesudas", "youtube_url": "https://www.youtube.com/results?search_query=Aadhi+Bhagavan+Malayalam", "genres": ["Malayalam Melody"]},
         ],
     },
     "English": {
         "sad": [
-            {"title": "Fix You", "artist": "Coldplay", "youtube_url": "https://www.youtube.com/results?search_query=Fix+You+Coldplay"},
-            {"title": "Someone Like You", "artist": "Adele", "youtube_url": "https://www.youtube.com/results?search_query=Someone+Like+You+Adele"},
-            {"title": "The Night We Met", "artist": "Lord Huron", "youtube_url": "https://www.youtube.com/results?search_query=The+Night+We+Met+Lord+Huron"},
-            {"title": "Skinny Love", "artist": "Bon Iver", "youtube_url": "https://www.youtube.com/results?search_query=Skinny+Love+Bon+Iver"},
-            {"title": "Lofi Sad Beats", "artist": "Various", "youtube_url": "https://www.youtube.com/results?search_query=lofi+sad+beats+study"},
+            {"title": "Fix You", "artist": "Coldplay", "youtube_url": "https://www.youtube.com/results?search_query=Fix+You+Coldplay", "genres": ["Rock", "Indie"]},
+            {"title": "Someone Like You", "artist": "Adele", "youtube_url": "https://www.youtube.com/results?search_query=Someone+Like+You+Adele", "genres": ["Indie"]},
+            {"title": "The Night We Met", "artist": "Lord Huron", "youtube_url": "https://www.youtube.com/results?search_query=The+Night+We+Met+Lord+Huron", "genres": ["Indie"]},
+            {"title": "Skinny Love", "artist": "Bon Iver", "youtube_url": "https://www.youtube.com/results?search_query=Skinny+Love+Bon+Iver", "genres": ["Indie"]},
+            {"title": "Lofi Sad Beats", "artist": "Various", "youtube_url": "https://www.youtube.com/results?search_query=lofi+sad+beats+study", "genres": ["Lo-fi", "Ambient", "Focus Music"]},
         ],
         "happy": [
-            {"title": "Happy", "artist": "Pharrell Williams", "youtube_url": "https://www.youtube.com/results?search_query=Happy+Pharrell+Williams"},
-            {"title": "Can't Stop the Feeling", "artist": "Justin Timberlake", "youtube_url": "https://www.youtube.com/results?search_query=Cant+Stop+The+Feeling+Justin+Timberlake"},
-            {"title": "Yellow", "artist": "Coldplay", "youtube_url": "https://www.youtube.com/results?search_query=Yellow+Coldplay"},
-            {"title": "Good as Hell", "artist": "Lizzo", "youtube_url": "https://www.youtube.com/results?search_query=Good+As+Hell+Lizzo"},
-            {"title": "Uptown Funk", "artist": "Bruno Mars", "youtube_url": "https://www.youtube.com/results?search_query=Uptown+Funk+Bruno+Mars"},
+            {"title": "Happy", "artist": "Pharrell Williams", "youtube_url": "https://www.youtube.com/results?search_query=Happy+Pharrell+Williams", "genres": ["EDM", "Rock"]},
+            {"title": "Can't Stop the Feeling", "artist": "Justin Timberlake", "youtube_url": "https://www.youtube.com/results?search_query=Cant+Stop+The+Feeling+Justin+Timberlake", "genres": ["EDM"]},
+            {"title": "Yellow", "artist": "Coldplay", "youtube_url": "https://www.youtube.com/results?search_query=Yellow+Coldplay", "genres": ["Rock", "Indie"]},
+            {"title": "Good as Hell", "artist": "Lizzo", "youtube_url": "https://www.youtube.com/results?search_query=Good+As+Hell+Lizzo", "genres": ["EDM"]},
+            {"title": "Uptown Funk", "artist": "Bruno Mars", "youtube_url": "https://www.youtube.com/results?search_query=Uptown+Funk+Bruno+Mars", "genres": ["EDM"]},
         ],
         "calm": [
-            {"title": "Weightless", "artist": "Marconi Union", "youtube_url": "https://www.youtube.com/results?search_query=Weightless+Marconi+Union"},
-            {"title": "Clair de Lune", "artist": "Debussy", "youtube_url": "https://www.youtube.com/results?search_query=Clair+de+Lune+Debussy"},
-            {"title": "Lofi Hip Hop Radio", "artist": "Various", "youtube_url": "https://www.youtube.com/results?search_query=lofi+hip+hop+radio+beats+to+study"},
-            {"title": "The Scientist", "artist": "Coldplay", "youtube_url": "https://www.youtube.com/results?search_query=The+Scientist+Coldplay"},
+            {"title": "Weightless", "artist": "Marconi Union", "youtube_url": "https://www.youtube.com/results?search_query=Weightless+Marconi+Union", "genres": ["Ambient", "Focus Music", "Lo-fi"]},
+            {"title": "Clair de Lune", "artist": "Debussy", "youtube_url": "https://www.youtube.com/results?search_query=Clair+de+Lune+Debussy", "genres": ["Ambient", "Focus Music", "Classical"]},
+            {"title": "Lofi Hip Hop Radio", "artist": "Various", "youtube_url": "https://www.youtube.com/results?search_query=lofi+hip+hop+radio+beats+to+study", "genres": ["Lo-fi", "Focus Music", "Ambient"]},
+            {"title": "The Scientist", "artist": "Coldplay", "youtube_url": "https://www.youtube.com/results?search_query=The+Scientist+Coldplay", "genres": ["Rock", "Indie"]},
         ],
         "angry": [
-            {"title": "Eye of the Tiger", "artist": "Survivor", "youtube_url": "https://www.youtube.com/results?search_query=Eye+of+the+Tiger+Survivor"},
-            {"title": "Lose Yourself", "artist": "Eminem", "youtube_url": "https://www.youtube.com/results?search_query=Lose+Yourself+Eminem"},
-            {"title": "Harder Better Faster", "artist": "Daft Punk", "youtube_url": "https://www.youtube.com/results?search_query=Harder+Better+Faster+Stronger+Daft+Punk"},
+            {"title": "Eye of the Tiger", "artist": "Survivor", "youtube_url": "https://www.youtube.com/results?search_query=Eye+of+the+Tiger+Survivor", "genres": ["Rock"]},
+            {"title": "Lose Yourself", "artist": "Eminem", "youtube_url": "https://www.youtube.com/results?search_query=Lose+Yourself+Eminem", "genres": ["Rock"]},
+            {"title": "Harder Better Faster", "artist": "Daft Punk", "youtube_url": "https://www.youtube.com/results?search_query=Harder+Better+Faster+Stronger+Daft+Punk", "genres": ["EDM"]},
         ],
     }
 }
@@ -335,11 +332,13 @@ def get_music_recommendations(
     - User's dominant emotion
     - User's preferred music languages
     - User's favorite artists (boost matching songs)
+    - User's preferred music genres (boost matching songs)
     No external API, no CSV, no pretrained model needed.
     """
     mood             = EMOTION_TO_MOOD.get(dominant_emotion, "calm")
     music_languages  = interest_profile.get("music_languages", ["English"])
     favorite_artists = [a.lower() for a in interest_profile.get("artists", [])]
+    music_genres     = [g.lower() for g in interest_profile.get("music", [])]
 
     # If no language preference set — use English as default
     if not music_languages:
@@ -353,8 +352,19 @@ def get_music_recommendations(
         for song in songs:
             song_copy = dict(song)
             song_copy["language"] = lang
+            
+            # Base score
+            score = 1
             # Boost score if artist is in favorites
-            song_copy["_score"] = 2 if song["artist"].lower() in favorite_artists else 1
+            if song["artist"].lower() in favorite_artists:
+                score += 3
+            # Boost score if any song genre matches user preferred genres
+            song_genres = [sg.lower() for sg in song.get("genres", [])]
+            matching_genres = set(song_genres).intersection(music_genres)
+            if matching_genres:
+                score += len(matching_genres) * 2.5
+                
+            song_copy["_score"] = score
             collected.append(song_copy)
 
     # If not enough songs — add from other languages
@@ -364,10 +374,19 @@ def get_music_recommendations(
                 for song in moods.get(mood, []):
                     song_copy = dict(song)
                     song_copy["language"] = lang
-                    song_copy["_score"] = 0
+                    
+                    score = 0
+                    if song["artist"].lower() in favorite_artists:
+                        score += 3
+                    song_genres = [sg.lower() for sg in song.get("genres", [])]
+                    matching_genres = set(song_genres).intersection(music_genres)
+                    if matching_genres:
+                        score += len(matching_genres) * 2.5
+                        
+                    song_copy["_score"] = score
                     collected.append(song_copy)
 
-    # Sort by score (favorites first) and deduplicate
+    # Sort by score (favorites and genres first) and deduplicate
     seen   = set()
     unique = []
     for s in sorted(collected, key=lambda x: -x["_score"]):
