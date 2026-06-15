@@ -336,9 +336,9 @@ def get_music_recommendations(
     No external API, no CSV, no pretrained model needed.
     """
     mood             = EMOTION_TO_MOOD.get(dominant_emotion, "calm")
-    music_languages  = interest_profile.get("music_languages", ["English"])
-    favorite_artists = [a.lower() for a in interest_profile.get("artists", [])]
-    music_genres     = [g.lower() for g in interest_profile.get("music", [])]
+    music_languages  = [l.strip() for l in interest_profile.get("music_languages", []) if l.strip()]
+    favorite_artists = [a.lower().strip() for a in interest_profile.get("artists", []) if a.strip()]
+    music_genres     = [g.lower().strip() for g in interest_profile.get("music", []) if g.strip()]
 
     # If no language preference set — use English as default
     if not music_languages:
@@ -346,51 +346,40 @@ def get_music_recommendations(
 
     collected = []
 
-    # Collect songs from preferred languages
-    for lang in music_languages:
-        songs = SONG_CATALOGUE.get(lang, {}).get(mood, [])
+    # Score ALL songs in the catalog for the matched mood across all languages
+    for lang, moods in SONG_CATALOGUE.items():
+        songs = moods.get(mood, [])
         for song in songs:
             song_copy = dict(song)
             song_copy["language"] = lang
             
             # Base score
-            score = 1
-            # Boost score if artist is in favorites
-            if song["artist"].lower() in favorite_artists:
-                score += 3
-            # Boost score if any song genre matches user preferred genres
-            song_genres = [sg.lower() for sg in song.get("genres", [])]
+            score = 1.0
+            
+            # 1. Language Boost: If the song's language is in preferred languages
+            for preferred_lang in music_languages:
+                if preferred_lang.lower() == lang.lower():
+                    score += 15.0
+                    break
+            
+            # 2. Genre Boost: Give +12 points for each matching genre
+            song_genres = [sg.lower().strip() for sg in song.get("genres", [])]
             matching_genres = set(song_genres).intersection(music_genres)
             if matching_genres:
-                score += len(matching_genres) * 2.5
+                score += len(matching_genres) * 12.0
+            
+            # 3. Artist Boost: Give +8 points if the artist is in user's favorites
+            if song["artist"].lower().strip() in favorite_artists:
+                score += 8.0
                 
             song_copy["_score"] = score
             collected.append(song_copy)
 
-    # If not enough songs — add from other languages
-    if len(collected) < count:
-        for lang, moods in SONG_CATALOGUE.items():
-            if lang not in music_languages:
-                for song in moods.get(mood, []):
-                    song_copy = dict(song)
-                    song_copy["language"] = lang
-                    
-                    score = 0
-                    if song["artist"].lower() in favorite_artists:
-                        score += 3
-                    song_genres = [sg.lower() for sg in song.get("genres", [])]
-                    matching_genres = set(song_genres).intersection(music_genres)
-                    if matching_genres:
-                        score += len(matching_genres) * 2.5
-                        
-                    song_copy["_score"] = score
-                    collected.append(song_copy)
-
-    # Sort by score (favorites and genres first) and deduplicate
+    # Sort by score (descending) and deduplicate by title
     seen   = set()
     unique = []
     for s in sorted(collected, key=lambda x: -x["_score"]):
-        key = s["title"]
+        key = s["title"].lower().strip()
         if key not in seen:
             seen.add(key)
             unique.append(s)
