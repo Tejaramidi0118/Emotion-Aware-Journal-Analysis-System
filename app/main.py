@@ -30,21 +30,18 @@ app.include_router(feedback.router)
 
 @app.on_event("startup")
 async def startup_event():
+    import asyncio
+    async def run_init_background():
+        try:
+            # Let the server bind and start first
+            await asyncio.sleep(2)
+            from app.rag.wellness_kb import build_wellness_kb
+            build_wellness_kb()
+            print("RAG system initialized in background.")
+        except Exception as e:
+            print(f"Background RAG init failed: {e}")
 
-    try:
-
-        from app.rag.wellness_kb import build_wellness_kb
-
-        build_wellness_kb()
-
-
-        print("RAG system initialized.")
-
-    except Exception as e:
-
-        print(
-            f"RAG init failed: {e}"
-        )
+    asyncio.create_task(run_init_background())
 
 @app.get("/")
 def root():

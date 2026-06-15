@@ -6,6 +6,7 @@ import { AlertCircle, ChevronRight, ChevronLeft, Check, Mail, X } from 'lucide-r
 import { signInWithGoogle } from '../firebase';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
+import MorphingOrb from '../components/MorphingOrb';
 
 const MUSIC_ECOSYSTEM = {
   Telugu: {
@@ -310,6 +311,9 @@ export default function Signup() {
         {/* ================= INITIAL SELECTION SCREEN ================= */}
         {signupMethod === null && (
           <div className="step-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto' }}>
+              <MorphingOrb size={76} />
+            </div>
             <div>
               <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                 Create Account

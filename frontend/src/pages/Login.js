@@ -6,6 +6,7 @@ import { BookOpen, KeyRound, Mail, AlertCircle, Sparkles } from 'lucide-react';
 import { signInWithGoogle } from '../firebase';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
+import MorphingOrb from '../components/MorphingOrb';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -151,18 +152,14 @@ export default function Login() {
         {/* Logo and Headings */}
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
-            margin: '0 auto 16px auto',
-            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.25)'
+            margin: '0 auto 12px auto',
+            height: '76px',
+            width: '76px'
           }}>
-            <BookOpen size={28} />
+            <MorphingOrb size={76} />
           </div>
           <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             Welcome to EchoMind

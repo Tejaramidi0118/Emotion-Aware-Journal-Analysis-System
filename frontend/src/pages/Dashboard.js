@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { submitTextJournal, getPendingFeedback, submitFeedback } from '../services/api';
 import StreakCard from '../components/StreakCard';
+import MorphingOrb from '../components/MorphingOrb';
+import TiltCard from '../components/TiltCard';
 import { API_BASE_URL } from "../services/api";
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -780,13 +782,16 @@ export default function Dashboard({ defaultTab }) {
 
   const renderAICompanion = () => (
     <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px', flex: 1, minHeight: 0 }}>
-      <div>
-        <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--accent-blue)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
-          AI Companion
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--accent-blue)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+            AI Companion
+          </div>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>
+            Personalized Suggestion
+          </h3>
         </div>
-        <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>
-          Personalized Suggestion
-        </h3>
+        <MorphingOrb size={48} />
       </div>
 
       {lastEntry ? (
@@ -900,7 +905,9 @@ export default function Dashboard({ defaultTab }) {
             gap: '10px'
           }}
         >
-          <div style={{ fontSize: '20px' }}>💬</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MorphingOrb size={32} />
+          </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '11.5px', fontWeight: '800', color: 'var(--accent-amber)', textTransform: 'uppercase' }}>
               Feedback Request
@@ -1038,13 +1045,13 @@ export default function Dashboard({ defaultTab }) {
       <main className="main-workspace-grid">
         
         {/* ================= LEFT PANEL ================= */}
-        <section className="workspace-column scrollable left-panel">
+        <TiltCard className="workspace-column scrollable left-panel">
           {renderCheckInVoice()}
           {renderStreakCard()}
-        </section>
+        </TiltCard>
 
         {/* ================= CENTER PANEL ================= */}
-        <section className="workspace-column center-panel">
+        <TiltCard className="workspace-column center-panel">
           
           {/* Main Workspace Frame */}
           <div className="glass-panel" style={{
@@ -1882,13 +1889,13 @@ export default function Dashboard({ defaultTab }) {
 
           </div>
 
-        </section>
+        </TiltCard>
 
         {/* ================= RIGHT PANEL ================= */}
-        <section className="workspace-column scrollable right-panel">
+        <TiltCard className="workspace-column scrollable right-panel">
           {renderSnapshot()}
           {renderAICompanion()}
-        </section>
+        </TiltCard>
 
       </main>
     </div>
