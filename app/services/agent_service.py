@@ -418,6 +418,29 @@ def get_interest_profile(user_id: str) -> dict:
     profile = mongo_db["interest_profiles_cache"].find_one({"user_id": user_id})
     if profile:
         return profile.get("interests", {})
+    
+    # Fallback to PostgreSQL if cache is empty
+    import uuid as uuid_lib
+    from app.database import SessionLocal
+    from app.models.user import User
+    
+    db = SessionLocal()
+    try:
+        uid = uuid_lib.UUID(user_id)
+        user = db.query(User).filter(User.id == uid).first()
+        if user and user.interest_profile:
+            # Populate cache in MongoDB
+            mongo_db["interest_profiles_cache"].update_one(
+                {"user_id": str(user_id)},
+                {"$set": {"interests": user.interest_profile}},
+                upsert=True
+            )
+            return user.interest_profile
+    except Exception as e:
+        print(f"Failed to fetch profile from PostgreSQL fallback: {e}")
+    finally:
+        db.close()
+        
     return {}
 
 

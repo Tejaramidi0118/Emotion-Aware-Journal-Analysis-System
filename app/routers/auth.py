@@ -64,6 +64,17 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    # Cache interest profile in MongoDB
+    try:
+        if req.interest_profile:
+            mongo_db["interest_profiles_cache"].update_one(
+                {"user_id": str(user.id)},
+                {"$set": {"interests": req.interest_profile}},
+                upsert=True
+            )
+    except Exception as e:
+        print(f"Failed to cache interest profile on signup: {e}")
+
     return {
         "message": "User created",
         "user_id": str(user.id)
