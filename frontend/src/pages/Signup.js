@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { AlertCircle, ChevronRight, ChevronLeft, Check, Mail, X } from 'lucide-react';
 import { signInWithGoogle } from '../firebase';
 import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
 import MorphingOrb from '../components/MorphingOrb';
 
 const MUSIC_ECOSYSTEM = {
@@ -86,15 +85,7 @@ export default function Signup() {
     }
   });
 
-  useGSAP(() => {
-    gsap.from('.glass-panel', {
-      y: 60,
-      scale: 0.95,
-      opacity: 0,
-      duration: 1.2,
-      ease: 'power4.out',
-    });
-  });
+
 
   useEffect(() => {
     gsap.fromTo('.step-container', 
@@ -258,7 +249,7 @@ export default function Signup() {
         zIndex: 0
       }} />
 
-      <div className="glass-panel" style={{
+      <div className="glass-panel entrance-stagger-1" style={{
         width: '100%',
         maxWidth: '560px',
         padding: '36px',

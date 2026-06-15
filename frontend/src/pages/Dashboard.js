@@ -177,6 +177,8 @@ export default function Dashboard({ defaultTab }) {
         { scale: 0.96, opacity: 0.8 },
         { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.7)' }
       );
+      // Morph 3D background colors to match active emotion
+      window.dispatchEvent(new CustomEvent('emotion-changed', { detail: lastEntry.dominant_emotion }));
     }
   }, [lastEntry]);
   
@@ -367,6 +369,8 @@ export default function Dashboard({ defaultTab }) {
       setHistory(prev => [res.data, ...prev]);
       setText('');
       setSelectedMood(null);
+      // Trigger satisfying emotion emoji explosion blast
+      window.dispatchEvent(new CustomEvent('trigger-emoji-blast', { detail: { emotion: res.data.dominant_emotion } }));
       // Check for pending feedback
       fetchFeedbackPending();
     } catch (e) {
@@ -791,7 +795,7 @@ export default function Dashboard({ defaultTab }) {
             Personalized Suggestion
           </h3>
         </div>
-        <MorphingOrb size={48} />
+        <MorphingOrb size={48} emotion={lastEntry?.dominant_emotion} />
       </div>
 
       {lastEntry ? (
@@ -906,7 +910,7 @@ export default function Dashboard({ defaultTab }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MorphingOrb size={32} />
+            <MorphingOrb size={32} emotion={pendingFeedback?.dominant_emotion} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '11.5px', fontWeight: '800', color: 'var(--accent-amber)', textTransform: 'uppercase' }}>

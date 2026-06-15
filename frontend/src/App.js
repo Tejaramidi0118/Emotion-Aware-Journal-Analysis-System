@@ -9,6 +9,7 @@ import Analytics from './pages/Analytics';
 import Profile from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword';
 import Interactive3DBG from './components/Interactive3DBG';
+import EmojiBlast from './components/EmojiBlast';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ function App() {
   return (
     <AuthProvider>
       <Interactive3DBG />
+      <EmojiBlast />
       <BrowserRouter>
         <Routes>
           <Route path="/"        element={<Navigate to="/dashboard" />} />

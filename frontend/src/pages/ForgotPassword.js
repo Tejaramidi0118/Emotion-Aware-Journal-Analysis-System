@@ -1,32 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  BookOpen,
-  HelpCircle
-} from 'lucide-react';
-import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
+import { HelpCircle } from 'lucide-react';
 import MorphingOrb from '../components/MorphingOrb';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
-
-  useGSAP(() => {
-    const tl = gsap.timeline();
-    tl.from('.glass-panel', {
-      y: 60,
-      scale: 0.95,
-      opacity: 0,
-      duration: 1.2,
-      ease: 'power4.out',
-    });
-    tl.from('.glass-panel > *', {
-      y: 20,
-      opacity: 0,
-      stagger: 0.08,
-      duration: 0.8,
-      ease: 'power3.out',
-    }, '-=0.9');
-  });
 
   return (
     <div
@@ -62,7 +39,7 @@ export default function ForgotPassword() {
       }} />
 
       <div
-        className="glass-panel"
+        className="glass-panel entrance-stagger-1"
         style={{
           width: '100%',
           maxWidth: '440px',
@@ -73,7 +50,7 @@ export default function ForgotPassword() {
           gap: '24px'
         }}
       >
-        <div style={{ textAlign: 'center' }}>
+        <div className="entrance-stagger-2" style={{ textAlign: 'center' }}>
           <div
             style={{
               display: 'flex',
@@ -110,6 +87,7 @@ export default function ForgotPassword() {
         </div>
 
         <div
+          className="entrance-stagger-3"
           style={{
             background: 'var(--surface-solid)',
             border: '1px solid var(--border-subtle)',
@@ -139,6 +117,7 @@ export default function ForgotPassword() {
 
         <button
           onClick={() => navigate('/login')}
+          className="entrance-stagger-4"
           style={{
             width: '100%',
             padding: '14px',

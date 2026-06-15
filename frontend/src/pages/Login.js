@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, KeyRound, Mail, AlertCircle, Sparkles } from 'lucide-react';
+import { KeyRound, Mail, AlertCircle, Sparkles } from 'lucide-react';
 import { signInWithGoogle } from '../firebase';
-import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
 import MorphingOrb from '../components/MorphingOrb';
 
 export default function Login() {
@@ -15,24 +13,6 @@ export default function Login() {
   const [form, setForm]       = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
-
-  useGSAP(() => {
-    const tl = gsap.timeline();
-    tl.from('.glass-panel', {
-      y: 60,
-      scale: 0.95,
-      opacity: 0,
-      duration: 1.2,
-      ease: 'power4.out'
-    });
-    tl.from('.glass-panel > *', {
-      y: 20,
-      opacity: 0,
-      stagger: 0.08,
-      duration: 0.8,
-      ease: 'power3.out'
-    }, '-=0.9');
-  });
 
   
   const handleLogin = async () => {
@@ -139,7 +119,7 @@ export default function Login() {
       }} />
 
       {/* Login Card Container */}
-      <div className="glass-panel" style={{
+      <div className="glass-panel entrance-stagger-1" style={{
         width: '100%',
         maxWidth: '440px',
         padding: '40px',
@@ -150,7 +130,7 @@ export default function Login() {
       }}>
         
         {/* Logo and Headings */}
-        <div style={{ textAlign: 'center' }}>
+        <div className="entrance-stagger-2" style={{ textAlign: 'center' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -190,6 +170,7 @@ export default function Login() {
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
+          className="entrance-stagger-3"
           style={{
             width: '100%',
             display: 'flex',
@@ -217,7 +198,7 @@ export default function Login() {
           Continue with Google
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', margin: '0' }}>
+        <div className="entrance-stagger-4" style={{ display: 'flex', alignItems: 'center', margin: '0' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
           <span style={{ padding: '0 16px', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             OR
@@ -226,7 +207,7 @@ export default function Login() {
         </div>
 
         {/* Input Form Fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="entrance-stagger-5" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           <div>
             <label style={{
@@ -264,17 +245,30 @@ export default function Login() {
           </div>
 
           <div>
-            <label style={{
-              display: 'block',
-              fontSize: '11px',
-              fontWeight: '800',
-              color: 'var(--text-secondary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              marginBottom: '6px'
-            }}>
-              Password
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={{
+                fontSize: '11px',
+                fontWeight: '800',
+                color: 'var(--text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em'
+              }}>
+                Password
+              </label>
+              <button
+                onClick={() => navigate('/forgot-password')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent-blue)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                Forgot Password?
+              </button>
+            </div>
             <div style={{ position: 'relative' }}>
               <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
                 <KeyRound size={16} />
@@ -296,26 +290,6 @@ export default function Login() {
                 }}
               />
             </div>
-            <div
-              style={{
-                textAlign: 'right',
-                marginTop: '-6px'
-              }}
-            >
-              <button
-                onClick={() => navigate('/forgot-password')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--accent-blue)',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: '600'
-                }}
-              >
-                Forgot Password?
-              </button>
-            </div>
           </div>
 
         </div>
@@ -324,6 +298,7 @@ export default function Login() {
         <button
           onClick={handleLogin}
           disabled={loading}
+          className="entrance-stagger-6"
           style={{
             width: '100%',
             display: 'flex',
@@ -351,7 +326,7 @@ export default function Login() {
         </button>
 
         {/* Footer info */}
-        <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-secondary)' }}>
+        <div className="entrance-stagger-6" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-secondary)' }}>
           Don't have an account?{' '}
           <Link to="/signup" style={{ color: 'var(--accent-blue)', fontWeight: '700' }}>
             Sign up now
